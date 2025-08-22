@@ -1,7 +1,7 @@
 const User = require("../models/userModel");
 const {updateUserLevel} = require("../helpers/levelHelper");
-//const sendEmailVerification = require("../utils/sendEmailVerification");    
-//const cloudinary = require("../config/cloudinary");
+const sendEmailVerification = require("../utils/sendEmailVerification");    
+const cloudinary = require("../config/cloudinary");
 
 
 const registerUser = async (req, res) => {
@@ -60,9 +60,9 @@ const registerUser = async (req, res) => {
     }
 
     // **Image validation: must be provided and should be a base64 string or URL string**
-    // if (!image || typeof image !== "string" || image.trim() === "") {
-    //   return res.status(400).json({ message: "Image is required." });
-    // }
+    if (!image || typeof image !== "string" || image.trim() === "") {
+      return res.status(400).json({ message: "Image is required." });
+    }
 
     // **Address validation: Required and minimum 5 chars**
     if (!address || typeof address !== "string" || address.trim().length < 5) {
@@ -78,7 +78,6 @@ const registerUser = async (req, res) => {
 
     // Check for referral code validity
     let parent = null;
-    //let level = 1;
 
 //     if (referralCode) {
 //   parent = await User.findOne({ referralCode: referralCode.toUpperCase() });
@@ -110,14 +109,14 @@ const registerUser = async (req, res) => {
 
     // Upload to Cloudinary
     let imageUrl = null;
-    // if (image) {
-    //   const uploadRes = await cloudinary.uploader.upload(image, {
-    //     folder: "mlm_users",
-    //     allowed_formats: ["jpg", "jpeg", "png"],
-    //     transformation: [{ width: 500, height: 500, crop: "limit" }],
-    //   });
-    //   imageUrl = uploadRes.secure_url;
-    // }
+    if (image) {
+      const uploadRes = await cloudinary.uploader.upload(image, {
+        folder: "mlm_users",
+        allowed_formats: ["jpg", "jpeg", "png"],
+        transformation: [{ width: 500, height: 500, crop: "limit" }],
+      });
+      imageUrl = uploadRes.secure_url;
+    }
 
     // Generate unique referral code for the new user
     const newReferralCode = (firstName.slice(0, 2) + Date.now().toString().slice(-5)).toUpperCase();
@@ -133,7 +132,6 @@ const registerUser = async (req, res) => {
       referralCode: newReferralCode,
       referredBy: referralCode?.toUpperCase() || null,
       parentId: parent?._id || null,
-      //level: level,
       nominee: {
         firstName: nominee.firstName.trim(),
         lastName: nominee.lastName.trim(),
@@ -159,7 +157,7 @@ const registerUser = async (req, res) => {
     }
 
     // Send email verification 
-    //await sendEmailVerification(newUser);
+    await sendEmailVerification(newUser);
 
     res.status(201).json({ message: "User registered successfully. Please verify your email.", user: newUser });
   } catch (error) {

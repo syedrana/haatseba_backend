@@ -16,7 +16,12 @@ dbConnection();
 
 // ✅ Middlewares
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: ['https://haatseba.vercel.app/', 'http://localhost:3000'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // ✅ Static Files
 app.use("/uploads", express.static("uploads"));
