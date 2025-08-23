@@ -72,6 +72,11 @@ const userSchema = new mongoose.Schema(
       required: [true, "Address is required"],
       trim: true,
     },
+    role: {
+      type: String,
+      enum: ["user", "admin"],
+      default: "user",
+    },
     isDeleted: {
       type: Boolean,
       default: false,

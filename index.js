@@ -7,6 +7,7 @@ const upload = require("./middlewares/upload");
 const dbConnection = require("./helpers/dbConnection");
 const registration = require("./controllers/registrationController");
 const verification = require("./controllers/verificationController");
+const login = require("./controllers/loginController");
 
 
 
@@ -32,6 +33,8 @@ app.use("/uploads", express.static("uploads"));
 app.post("/registration", multerErrorHandler(upload.single("image")), securapi, registration);
 
 app.get("/verification", securapi, verification);
+
+app.post("/login", securapi, login);
 
 // ✅ Root Route (for Render test)
 app.get("/", (req, res) => {
