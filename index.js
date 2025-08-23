@@ -1,7 +1,9 @@
 require("dotenv").config();
 const express = require("express");
-const cors = require("cors");
 const securapi = require("./middlewares/secureApi.js");
+const corsConfig = require("./middlewares/corsConfig");
+const multerErrorHandler = require("./middlewares/uploadErrorHandler");
+const upload = require("./middlewares/upload");
 const dbConnection = require("./helpers/dbConnection");
 const registration = require("./controllers/registrationController");
 const verification = require("./controllers/verificationController");
@@ -14,20 +16,21 @@ const app =express();
 // ✅ Database Connection
 dbConnection();
 
+// ✅ CORS Middleware
+app.use(corsConfig);
+
 // ✅ Middlewares
-app.use(express.json());
-app.use(cors({
-  origin: ['https://haatseba.vercel.app', 'http://localhost:3000'],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+app.use(express.json({ limit: "5mb" }));
+app.use(express.urlencoded({ limit: "5mb", extended: true }));
+
+
 
 // ✅ Static Files
 app.use("/uploads", express.static("uploads"));
 
 // ✅ Routes
-app.post("/registration", securapi, registration);
+app.post("/registration", multerErrorHandler(upload.single("image")), securapi, registration);
+
 app.get("/verification", securapi, verification);
 
 // ✅ Root Route (for Render test)
