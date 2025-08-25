@@ -21,14 +21,20 @@ async function giveBonus(userId, level) {
     17: 6553600,
   };
 
+  const amount = bonusAmounts[level] || 0;
+
   const bonus = new Bonus({
     userId: userId,
     level: level,
-    bonusAmount: bonusAmounts[level] || 0,
+    bonusAmount: amount,
     status: "pending"
   });
 
   await bonus.save();
+
+  // 🔑 Wallet এ ক্রেডিট করো
+  await creditWallet(userId, amount);
+
   console.log(`🎁 Bonus Given → User: ${userId} | Level: ${level}`);
 }
 

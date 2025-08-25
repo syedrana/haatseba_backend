@@ -22,6 +22,11 @@ const bonusSchema = new mongoose.Schema({
       trim: true,
       maxlength: [100, "Bonus amount cannot exceed 100 characters"],
     },
+    rewardType: {  
+      type: String,
+      enum: ["cash", "gift", "product"],
+      default: "cash",
+    },
     status: {
       type: String,
       enum: {

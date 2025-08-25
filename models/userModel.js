@@ -36,6 +36,10 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false, // Admin approval required
     },
+    rejectedAt: {
+      type: Date,
+      default: null,
+    },
     status: {
       type: String,
       enum: ["active", "pending", "rejected", "banned"],
@@ -84,7 +88,7 @@ const userSchema = new mongoose.Schema(
     referralCode: {
       type: String,
       unique: true,
-      //required: [true, "Referral code is required"],
+      required: [true, "Referral code is required"],
       uppercase: true,
       default: null,
       trim: true,
@@ -98,6 +102,17 @@ const userSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       default: null,
+    },
+    placementPosition: { 
+      type: String, 
+      enum: ["left", "middle", "right"], 
+      default: null 
+    },
+    childIndex: { 
+      type: Number, 
+      min: 0, 
+      max: 2, 
+      default: null 
     },
     level: {
       type: Number,
@@ -147,6 +162,11 @@ const userSchema = new mongoose.Schema(
           },
           message: "Please provide a valid Bangladeshi phone number for nominee",
         },
+      },
+      address: {
+        type: String,
+        required: [true, "Address is required"],
+        trim: true,
       },
     },
   },

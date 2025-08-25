@@ -12,10 +12,10 @@ const registerUser = async (req, res) => {
       email,
       phone,
       password,
-      //image,
       address,
       referralCode,
       nominee,
+      placementPosition,
     } = req.body;
 
     // 🔐 Validation
@@ -72,6 +72,10 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ message: "Nominee details are required." });
     }
 
+    if (!placementPosition?.trim()) {
+      return res.status(400).json({ message: "Placement Position are required." });
+    }
+
     const emailExist = await User.findOne({ email });
     if (emailExist) return res.status(400).json({ message: "Email already in use." });
 
@@ -104,6 +108,14 @@ const registerUser = async (req, res) => {
       if (parent.referralLocked || parent.children.length >= 3) {
         return res.status(400).json({ message: "Referral user already has 3 children." });
       }
+
+      // Check slot availability
+      const usedSlots = await User.find({ parentId: parent._id }).select("placementPosition");
+
+      if (usedSlots.some(u => u.placementPosition === placementPosition)) {
+        return res.status(400).json({ message: `This slot (${placementPosition}) already taken.` });
+      }
+
     }
 
     // ✅ Upload image
@@ -124,6 +136,8 @@ const registerUser = async (req, res) => {
       referralCode: newReferralCode,
       referredBy: referralCode?.toUpperCase() || null,
       parentId: parent?._id || null,
+      placementPosition: parent ? placementPosition : null, // ✅ slot assign
+      childIndex: parent ? (placementPosition === "left" ? 0 : placementPosition === "middle" ? 1 : 2) : null,
       nominee: {
         firstName: nominee.firstName.trim(),
         lastName: nominee.lastName.trim(),
