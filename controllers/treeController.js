@@ -1,3 +1,4 @@
+const { image } = require("../config/cloudinary");
 const User = require("../models/userModel");
 
 // ✅ Downline Tree API
@@ -6,7 +7,7 @@ const getDownlineTree = async (req, res) => {
     const userId = req.userid; // যে ইউজারের tree দেখতে চাই
 
     // --- Root User
-    const rootUser = await User.findById(userId).select("firstName email children");
+    const rootUser = await User.findById(userId).select("firstName lastName email phone image referralCode level children");
 
     if (!rootUser) {
       return res.status(404).json({ message: "User not found" });
@@ -19,6 +20,10 @@ const getDownlineTree = async (req, res) => {
       userId: rootUser._id,
       name: rootUser.firstName,
       email: rootUser.email,
+      phone: rootUser.phone,
+      image: rootUser.image,
+      referralCode: rootUser.referralCode,
+      level: rootUser.level,
       tree,
     });
 
@@ -40,18 +45,26 @@ async function buildTree(userId, currentLevel, maxLevel) {
   }
 
   const childrenData = await Promise.all(
-    user.children.map(async (childId) => {
-      const child = await User.findById(childId).select("firstName email children");
-      return {
-        userId: child._id,
-        name: child.firstName,
-        email: child.email,
-        children: await buildTree(child._id, currentLevel + 1, maxLevel),
-      };
-    })
-  );
+  user.children.map(async (childId) => {
+    const child = await User.findById(childId).select("firstName lastName email phone image referralCode level children");
+    if (!child) return null; // safety check
 
-  return childrenData;
+    return {
+      userId: child._id,
+      name: `${child.firstName} ${child.lastName}`, // ✅ fixed
+      email: child.email,
+      phone: child.phone,
+      image: child.image,
+      referralCode: child.referralCode,
+      level: child.level,
+      children: await buildTree(child._id, currentLevel + 1, maxLevel),
+    };
+  })
+);
+
+// null গুলো বাদ দিয়ে clean result ফেরত দাও
+return childrenData.filter(Boolean);
+
 }
 
 module.exports = { getDownlineTree };

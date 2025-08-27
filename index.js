@@ -18,6 +18,7 @@ const login = require("./controllers/loginController");
 const { getUserDashboard } = require("./controllers/dashboardController");
 const { getDownlineTree } = require("./controllers/treeController");
 const { requestWithdraw } = require("./controllers/withdrawController");
+const {getProfile, getOwnProfile, getDashboardProfile, updateProfile, updatePassword} = require("./controllers/profileController");
 
 // 🟡 Admin Routes Controller
 const {approveWithdraw, rejectWithdraw,} = require("./controllers/withdrawController");
@@ -45,6 +46,10 @@ app.post("/login", securapi, login);
 app.get("/userdashboard", checklogin, getUserDashboard);
 app.get("/userdownlinetree", checklogin, getDownlineTree);
 app.post("/requestwithdraw", checklogin, requestWithdraw);
+app.get("/getprofile", checklogin, getProfile);
+app.get("/getownprofile/:id", checklogin, getOwnProfile);
+app.get("/getdashboardprofile", checklogin, getDashboardProfile);
+app.put("/updateprofile", checklogin, updateProfile);
 
 // 🟡 Admin Routes
 app.put("/approvewithdraw", checklogin, approveWithdraw);
