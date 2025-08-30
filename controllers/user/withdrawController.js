@@ -1,5 +1,23 @@
-const Withdraw = require("../models/withdrawModel");
-const Wallet = require("../models/walletModel");
+const Withdraw = require("../../models/withdrawModel");
+const Wallet = require("../../models/walletModel");
+
+
+// 🟢 Get Wallet Balance
+const getWalletBalance = async (req, res) => {
+  try {
+    const userId  = req.userid;
+    
+    let wallet = await Wallet.findOne({ userId });
+
+    if (!wallet) {
+      wallet = await Wallet.create({ userId, balance: 0 });
+    }
+
+    res.json({ balance: wallet.cashBalance });
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
 
 // 🟢 User → Request for Withdraw
 const requestWithdraw = async (req, res) => {
@@ -26,10 +44,11 @@ const requestWithdraw = async (req, res) => {
 
     // 3️⃣ Save Withdraw Request (Pending)
     const withdraw = new Withdraw({
-      userId,
-      amount,
-      method,
-      accountNumber,
+      userId : userId,
+      amount : amount,
+      method : method,
+      accountNumber : accountNumber,
+      status: "pending",
     });
     await withdraw.save();
 
@@ -133,6 +152,7 @@ const rejectWithdraw = async (req, res) => {
 };
 
 module.exports = {
+  getWalletBalance,
   requestWithdraw,
   approveWithdraw,
   rejectWithdraw,

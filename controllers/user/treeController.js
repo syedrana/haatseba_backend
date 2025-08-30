@@ -1,5 +1,5 @@
-const { image } = require("../config/cloudinary");
-const User = require("../models/userModel");
+const { image } = require("../../config/cloudinary");
+const User = require("../../models/userModel");
 
 // ✅ Downline Tree API
 const getDownlineTree = async (req, res) => {

@@ -1,7 +1,7 @@
-const User = require("../models/userModel");
-const {updateUserLevel} = require("../helpers/levelHelper");
-const uploadToCloudinary = require("../helpers/uploadToCloudinaryHelper");
-const sendEmailVerification = require("../utils/sendEmailVerification");    
+const User = require("../../models/userModel");
+const {updateUserLevel} = require("../../helpers/levelHelper");
+const uploadToCloudinary = require("../../helpers/uploadToCloudinaryHelper");
+const sendEmailVerification = require("../../utils/sendEmailVerification");    
 
 
 const registerUser = async (req, res) => {

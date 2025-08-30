@@ -1,13 +1,13 @@
-const Admin = require("../Model/adminModel");
+const Admin = require("../../models/adminModel");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
 let login = async (req, res) => {
    
     try {
-        const { name, password } = req.body;
+        const { username, password } = req.body;
 
-        if (!name) {
+        if (!username) {
             return res.status(400).send("Admin name is required");
         }
 
@@ -15,14 +15,16 @@ let login = async (req, res) => {
             return res.status(400).send("password is required");
         }
 
-        let exitingUser = await Admin.findOne({name:name})
+        let exitingUser = await Admin.findOne({username:username})
 
         if (exitingUser){
             bcrypt.compare(password, exitingUser.password, function(err, result) {
                 if (result){
 
                     const token = jwt.sign({
-                        username: exitingUser.name,
+                        username: exitingUser.username,
+                        name: exitingUser.name,
+                        email: exitingUser.email,
                         userid: exitingUser._id,
                         role: exitingUser.role,
                     }, process.env.JWT_SECRET,{

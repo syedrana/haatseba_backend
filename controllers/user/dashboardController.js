@@ -1,8 +1,8 @@
-const User = require("../models/userModel");
-const Wallet = require("../models/walletModel");
-const Transaction = require("../models/transactionModel");
-const Bonus = require("../models/bonusModel");
-const {getDownlineCount} = require("../helpers/downlineCountHelper");
+const User = require("../../models/userModel");
+const Wallet = require("../../models/walletModel");
+const Transaction = require("../../models/transactionModel");
+const Bonus = require("../../models/bonusModel");
+const {getDownlineCount} = require("../../helpers/downlineCountHelper");
 
 // ✅ User Dashboard Summary
 const getUserDashboard = async (req, res) => {

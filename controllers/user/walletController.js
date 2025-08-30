@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
 
-const Wallet = require("../models/walletModel");
-const Transaction = require("../models/transactionModel");
+const Wallet = require("../../models/walletModel");
+const Transaction = require("../../models/transactionModel");
 
 // ================================
 // ✅ 1. Get Wallet Balance

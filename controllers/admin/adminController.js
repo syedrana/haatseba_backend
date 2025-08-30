@@ -1,8 +1,8 @@
-const User = require("../models/userModel");
-const Wallet = require("../models/walletModel");
-const Withdraw = require("../models/withdrawModel");
-const Deposit = require("../models/depositModel");
-const Transaction = require("../models/transactionModel");
+const User = require("../../models/userModel");
+const Wallet = require("../../models/walletModel");
+const Withdraw = require("../../models/withdrawModel");
+const Deposit = require("../../models/depositModel");
+const Transaction = require("../../models/transactionModel");
 
 // 📊 Dashboard Summary
 const getAdminSummary = async (req, res) => {

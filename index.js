@@ -12,17 +12,18 @@ const upload = require("./middlewares/upload");
 const dbConnection = require("./helpers/dbConnection");
 
 // ✅ User Routes Controller
-const registration = require("./controllers/registrationController");
-const verification = require("./controllers/verificationController");
-const login = require("./controllers/loginController");
-const { getUserDashboard } = require("./controllers/dashboardController");
-const { getDownlineTree } = require("./controllers/treeController");
-const { requestWithdraw } = require("./controllers/withdrawController");
-const {getProfile, getOwnProfile, getDashboardProfile, updateProfile, updatePassword} = require("./controllers/profileController");
+const registration = require("./controllers/user/registrationController");
+const verification = require("./controllers/user/verificationController");
+const login = require("./controllers/user/loginController");
+const { getUserDashboard } = require("./controllers/user/dashboardController");
+const { getDownlineTree } = require("./controllers/user/treeController");
+const { requestWithdraw, getWalletBalance } = require("./controllers/user/withdrawController");
+const {getProfile, getOwnProfile, getDashboardProfile, updateProfile, updatePassword} = require("./controllers/user/profileController");
 
 // 🟡 Admin Routes Controller
-const {approveWithdraw, rejectWithdraw,} = require("./controllers/withdrawController");
-
+const {approveWithdraw, rejectWithdraw,} = require("./controllers/user/withdrawController");
+const adminlogin = require("./controllers/admin/adminLoginController");
+const adminreg = require("./controllers/admin/adminRegController");
 
 const app =express();
 
@@ -45,6 +46,7 @@ app.get("/verification", securapi, verification);
 app.post("/login", securapi, login);
 app.get("/userdashboard", checklogin, getUserDashboard);
 app.get("/userdownlinetree", checklogin, getDownlineTree);
+app.get("/walletbalance", checklogin, getWalletBalance);
 app.post("/requestwithdraw", checklogin, requestWithdraw);
 app.get("/getprofile", checklogin, getProfile);
 app.get("/getownprofile/:id", checklogin, getOwnProfile);
@@ -54,6 +56,8 @@ app.put("/updateprofile", checklogin, updateProfile);
 // 🟡 Admin Routes
 app.put("/approvewithdraw", checklogin, approveWithdraw);
 app.put("/rejectwithdraw", checklogin, rejectWithdraw);
+app.post("/adminLogin", securapi, adminlogin);
+app.post("/adminreg", securapi, adminreg);
 
 // ✅ Root Route (for Render test)
 app.get("/", (req, res) => {
