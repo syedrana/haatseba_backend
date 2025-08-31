@@ -36,6 +36,10 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false, // Admin approval required
     },
+    isRejected: {
+      type: Boolean,
+      default: false, // Admin approval required
+    },
     rejectedAt: {
       type: Date,
       default: null,

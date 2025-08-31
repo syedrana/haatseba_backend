@@ -1,7 +1,7 @@
 const User = require("../../models/userModel");
 const Wallet = require("../../models/walletModel");
 const Withdraw = require("../../models/withdrawModel");
-const Deposit = require("../../models/depositModel");
+//const Deposit = require("../../models/depositModel");
 const Transaction = require("../../models/transactionModel");
 
 // 📊 Dashboard Summary
@@ -13,26 +13,30 @@ const getAdminSummary = async (req, res) => {
     ]))[0]?.balance || 0;
 
 
-    const totalDeposits = await Deposit.aggregate([
-      { $match: { status: "approved" } },
-      { $group: { _id: null, amount: { $sum: "$amount" } } }
-    ]);
+    // const totalDeposits = await Deposit.aggregate([
+    //   { $match: { status: "approved" } },
+    //   { $group: { _id: null, amount: { $sum: "$amount" } } }
+    // ]);
 
     const totalWithdraws = await Withdraw.aggregate([
       { $match: { status: "approved" } },
       { $group: { _id: null, amount: { $sum: "$amount" } } }
     ]);
 
-    const pendingWithdraws = await Withdraw.countDocuments({ status: "pending" });
-    const pendingDeposits = await Deposit.countDocuments({ status: "pending" });
+    const pendingWithdrawsCount = await Withdraw.countDocuments({ status: "pending" });
+    const pendingUserCount = await User.countDocuments({ isApproved: "false" });
+    const approvalUserCount = await User.countDocuments({ isApproved: "true" });
+    const rejectedUserCount = await User.countDocuments({ isRejected: "true" });
 
     return res.json({
       totalUsers,
       totalWalletBalance: totalWalletBalance[0]?.balance || 0,
-      totalDeposits: totalDeposits[0]?.amount || 0,
+      //pendingUser: totalDeposits[0]?.amount || 0,
       totalWithdraws: totalWithdraws[0]?.amount || 0,
-      pendingWithdraws,
-      pendingDeposits,
+      pendingWithdrawsCount,
+      approvalUserCount,
+      pendingUserCount,
+      rejectedUserCount,
     });
   } catch (error) {
     console.error("Admin Summary Error:", error);

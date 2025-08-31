@@ -5,6 +5,7 @@ const express = require("express");
 const securapi = require("./middlewares/secureApi.js");
 const corsConfig = require("./middlewares/corsConfig");
 const checklogin = require("./middlewares/checkLogin.js");
+const checkadmin = require("./middlewares/checkAdmin.js");
 const multerErrorHandler = require("./middlewares/uploadErrorHandler");
 const upload = require("./middlewares/upload");
 
@@ -24,6 +25,11 @@ const {getProfile, getOwnProfile, getDashboardProfile, updateProfile, updatePass
 const {approveWithdraw, rejectWithdraw,} = require("./controllers/user/withdrawController");
 const adminlogin = require("./controllers/admin/adminLoginController");
 const adminreg = require("./controllers/admin/adminRegController");
+const {
+  getAdminSummary,
+  getWithdrawTrend,
+  getLatestWithdraws,
+} = require("./controllers/admin/dashboardController");
 
 const app =express();
 
@@ -54,10 +60,13 @@ app.get("/getdashboardprofile", checklogin, getDashboardProfile);
 app.put("/updateprofile", checklogin, updateProfile);
 
 // 🟡 Admin Routes
-app.put("/approvewithdraw", checklogin, approveWithdraw);
-app.put("/rejectwithdraw", checklogin, rejectWithdraw);
+app.put("/approvewithdraw", checkadmin, approveWithdraw);
+app.put("/rejectwithdraw", checkadmin, rejectWithdraw);
 app.post("/adminLogin", securapi, adminlogin);
 app.post("/adminreg", securapi, adminreg);
+app.get("/adminsummary", checkadmin,  getAdminSummary);
+app.get("/withdrawstrend", checkadmin, getWithdrawTrend);
+app.get("/withdrawslatest", checkadmin, getLatestWithdraws);
 
 // ✅ Root Route (for Render test)
 app.get("/", (req, res) => {
