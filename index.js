@@ -22,14 +22,11 @@ const { requestWithdraw, getWalletBalance } = require("./controllers/user/withdr
 const {getProfile, getOwnProfile, getDashboardProfile, updateProfile, updatePassword} = require("./controllers/user/profileController");
 
 // 🟡 Admin Routes Controller
-const {approveWithdraw, rejectWithdraw,} = require("./controllers/user/withdrawController");
 const adminlogin = require("./controllers/admin/adminLoginController");
 const adminreg = require("./controllers/admin/adminRegController");
-const {
-  getAdminSummary,
-  getWithdrawTrend,
-  getLatestWithdraws,
-} = require("./controllers/admin/dashboardController");
+const { getAdminSummary, getWithdrawTrend, getLatestWithdraws,} = require("./controllers/admin/dashboardController");
+const { getPendingUsers, getApprovedUsers, getRejectedUsers, approveUser, rejectUser, } = require("./controllers/admin/userManagementController");
+const { getPendingWithdrawal, getApprovedWithdrawal, getRejectedWithdrawal, approveWithdraw, rejectWithdraw, } = require("./controllers/admin/withdrawManagementController");
 
 const app =express();
 
@@ -60,13 +57,31 @@ app.get("/getdashboardprofile", checklogin, getDashboardProfile);
 app.put("/updateprofile", checklogin, updateProfile);
 
 // 🟡 Admin Routes
-app.put("/approvewithdraw", checkadmin, approveWithdraw);
-app.put("/rejectwithdraw", checkadmin, rejectWithdraw);
+
+    // Admin login & rag controller
 app.post("/adminLogin", securapi, adminlogin);
 app.post("/adminreg", securapi, adminreg);
+
+    // Admin Dashboard Controller
 app.get("/adminsummary", checkadmin,  getAdminSummary);
 app.get("/withdrawstrend", checkadmin, getWithdrawTrend);
 app.get("/withdrawslatest", checkadmin, getLatestWithdraws);
+
+    // User Management Controller
+app.get("/pendingusers", checkadmin,  getPendingUsers);
+app.get("/approvedusers", checkadmin, getApprovedUsers);
+app.get("/rejectedusers", checkadmin, getRejectedUsers);
+app.patch("/approveuser/:id", checkadmin, approveUser);
+app.patch("/rejectuser/:id", checkadmin, rejectUser);
+
+    // Withdraw Management Controller
+app.get("/pendingwithdrawal", checkadmin,  getPendingWithdrawal);
+app.get("/approvedwithdrawal", checkadmin, getApprovedWithdrawal);
+app.get("/rejectedwithdrawal", checkadmin, getRejectedWithdrawal);
+app.patch("/approvewithdraw/:id", checkadmin, approveWithdraw);
+app.patch("/rejectwithdraw/:id", checkadmin, rejectWithdraw);
+
+
 
 // ✅ Root Route (for Render test)
 app.get("/", (req, res) => {
