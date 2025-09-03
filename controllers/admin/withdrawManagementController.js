@@ -78,14 +78,21 @@ const approveWithdraw = async (req, res) => {
     withdraw.approvedAt = new Date();
     await withdraw.save();
 
-    // ✅ Add transaction record
+    // 📝 Create transaction record
     const transaction = new Transaction({
       userId: withdraw.userId,
-      type: "debit",                // টাকা বের হলো
+      type: "debit",                                // টাকা বের হলো
       amount: withdraw.amount,
-      description: "withdraw",        // withdraw কারণে
-      status: "completed",
+      category: "withdraw",
+      relatedId: withdraw._id,
+      relatedModel: "Withdraw",
+      description: `Withdraw approved via ${withdraw.method} (${withdraw.accountNumber})`,
+      status: "approved",
+      runningBalance: wallet.balance,
+      actor: "admin",
+      processedAt: new Date(),
     });
+
     await transaction.save();
 
     return res.json({
@@ -119,14 +126,21 @@ const rejectWithdraw = async (req, res) => {
     withdraw.approvedAt = new Date();
     await withdraw.save();
 
-    // ✅ Transaction entry for rejected withdraw
+    // 📝 Create transaction record
     const transaction = new Transaction({
       userId: withdraw.userId,
-      type: "debit",           // debit try হয়েছিল
+      type: "debit",                                // debit attempt হয়েছিল
       amount: withdraw.amount,
-      description: "withdraw",
-      status: "failed",        // failed mark করলাম
+      category: "withdraw",
+      relatedId: withdraw._id,
+      relatedModel: "Withdraw",
+      description: `Withdraw rejected (method: ${withdraw.method})`,
+      status: "rejected",
+      runningBalance: (await Wallet.findOne({ userId: withdraw.userId }))?.balance || 0,
+      actor: "admin",
+      processedAt: new Date(),
     });
+
     await transaction.save();
 
     return res.json({
