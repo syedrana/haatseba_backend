@@ -27,6 +27,7 @@ const adminreg = require("./controllers/admin/adminRegController");
 const { getAdminSummary, getWithdrawTrend, getLatestWithdraws,} = require("./controllers/admin/dashboardController");
 const { getPendingUsers, getApprovedUsers, getRejectedUsers, approveUser, rejectUser, } = require("./controllers/admin/userManagementController");
 const { getPendingWithdrawal, getApprovedWithdrawal, getRejectedWithdrawal, approveWithdraw, rejectWithdraw, } = require("./controllers/admin/withdrawManagementController");
+const {transaction, transDetaiols} = require("./controllers/admin/transactionManagementController");
 
 const app =express();
 
@@ -81,7 +82,9 @@ app.get("/rejectedwithdrawal", checkadmin, getRejectedWithdrawal);
 app.patch("/approvewithdraw/:id", checkadmin, approveWithdraw);
 app.patch("/rejectwithdraw/:id", checkadmin, rejectWithdraw);
 
-
+// Transsaction Management Controller
+app.get("/transaction", checkadmin, transaction);
+app.get("/transactiondetails", checkadmin, transDetaiols);
 
 // ✅ Root Route (for Render test)
 app.get("/", (req, res) => {
