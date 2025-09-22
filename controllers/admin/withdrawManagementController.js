@@ -4,60 +4,131 @@ const Wallet = require("../../models/walletModel");
 const Transaction = require("../../models/transactionModel"); // ensure this path is correct
 
 
-// 🛠️ Common history fetcher
+// // 🛠️ Common history fetcher
+// const getWithdrawHistory = async (req, res, statusFilter) => {
+//   try {
+//     const { page = 1, limit = 10, sort = "desc", userId, method, startDate, endDate,  } = req.query;
+
+//     const query = { status: statusFilter };
+
+//     // 🔍 Filters
+//     if (userId) query.userId = userId;
+//     if (method) query.method = method;
+//     if (startDate && endDate) {
+//       query.createdAt = { $gte: new Date(startDate), $lte: new Date(endDate) };
+//     }
+
+//     // 📌 Pagination & Sorting
+//     const options = {
+//       page: parseInt(page, 10),
+//       limit: parseInt(limit, 10),
+//       sort: { createdAt: sort === "asc" ? 1 : -1 },
+//       populate: { path: "userId", select: "firstName lastName email phone image level" }
+//     };
+
+//     // Withdraw history
+//     const withdraws = await Withdrawal.find(query)
+//       .populate("userId", "firstName lastName email phone image level")
+//       .sort(options.sort)
+//       .skip((options.page - 1) * options.limit)
+//       .limit(options.limit);
+
+//     // Total count
+//     const count = await Withdrawal.countDocuments(query);
+
+//     // 🔗 Merge with transactions
+//     const withdrawsWithTx = await Promise.all(
+//       withdraws.map(async (w) => {
+//         const tx = await Transaction.findOne({ relatedId: w._id, category: "withdraw" }).lean();
+//         return { ...w.toObject(), transaction: tx || null };
+//       })
+//     );
+
+//     res.json({
+//       status: statusFilter,
+//       page: options.page,
+//       limit: options.limit,
+//       count,
+//       totalPages: Math.ceil(count / options.limit),
+//       withdraws: withdrawsWithTx,
+//     });
+
+//   } catch (error) {
+//     console.error("Withdraw History Error:", error);
+//     res.status(500).json({ message: "Internal Server Error" });
+//   }
+// };
+
+
+// 🛠️ Common history fetcher with Search
 const getWithdrawHistory = async (req, res, statusFilter) => {
   try {
-    const { page = 1, limit = 10, sort = "desc", userId, method, startDate, endDate } = req.query;
+    const { page = 1, limit = 10, sort = "desc", search, startDate, endDate } = req.query;
 
-    const query = { status: statusFilter };
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const match = { status: statusFilter };
 
-    // 🔍 Filters
-    if (userId) query.userId = userId;
-    if (method) query.method = method;
     if (startDate && endDate) {
-      query.createdAt = { $gte: new Date(startDate), $lte: new Date(endDate) };
+      match.createdAt = { $gte: new Date(startDate), $lte: new Date(endDate) };
     }
 
-    // 📌 Pagination & Sorting
-    const options = {
-      page: parseInt(page, 10),
-      limit: parseInt(limit, 10),
-      sort: { createdAt: sort === "asc" ? 1 : -1 },
-      populate: { path: "userId", select: "firstName lastName email phone image level" }
-    };
+    // 🔍 Aggregate with search
+    const pipeline = [
+      { $match: match },
+      {
+        $lookup: {
+          from: "users", // users collection name (check in MongoDB)
+          localField: "userId",
+          foreignField: "_id",
+          as: "userId",
+        },
+      },
+      { $unwind: "$userId" },
+    ];
 
-    // Withdraw history
-    const withdraws = await Withdrawal.find(query)
-      .populate("userId", "firstName lastName email phone image level")
-      .sort(options.sort)
-      .skip((options.page - 1) * options.limit)
-      .limit(options.limit);
+    if (search) {
+      const regex = new RegExp(search, "i");
+      pipeline.push({
+        $match: {
+          $or: [
+            { "userId.firstName": regex },
+            { "userId.lastName": regex },
+            { "userId.email": regex },
+            { "userId.phone": regex },
+            { method: regex },
+            { accountNumber: regex },
+          ],
+        },
+      });
+    }
 
-    // Total count
-    const count = await Withdrawal.countDocuments(query);
+    // Count total
+    const countPipeline = [...pipeline, { $count: "total" }];
+    const countResult = await Withdrawal.aggregate(countPipeline);
+    const count = countResult[0]?.total || 0;
 
-    // 🔗 Merge with transactions
-    const withdrawsWithTx = await Promise.all(
-      withdraws.map(async (w) => {
-        const tx = await Transaction.findOne({ relatedId: w._id, category: "withdraw" }).lean();
-        return { ...w.toObject(), transaction: tx || null };
-      })
-    );
+    // Pagination & Sort
+    pipeline.push({ $sort: { createdAt: sort === "asc" ? 1 : -1 } });
+    pipeline.push({ $skip: skip });
+    pipeline.push({ $limit: parseInt(limit) });
+
+    const withdraws = await Withdrawal.aggregate(pipeline);
 
     res.json({
       status: statusFilter,
-      page: options.page,
-      limit: options.limit,
+      page: parseInt(page),
+      limit: parseInt(limit),
       count,
-      totalPages: Math.ceil(count / options.limit),
-      withdraws: withdrawsWithTx,
+      totalPages: Math.ceil(count / parseInt(limit)),
+      withdraws,
     });
-
   } catch (error) {
     console.error("Withdraw History Error:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+
 
 // 🟡 1. Get all pending approval Withdrawal
 const getPendingWithdrawal = async (req, res) => {
