@@ -99,6 +99,7 @@ const userSchema = new mongoose.Schema(
     },
     referredBy: {
       type: String,
+      required: [true, "Referral code is required"],
       default: null,
       trim: true,
     },
@@ -109,7 +110,7 @@ const userSchema = new mongoose.Schema(
     },
     placementPosition: { 
       type: String, 
-      enum: ["left", "middle", "right"], 
+      enum: ["line one", "line two", "line three"], 
       default: null 
     },
     childIndex: { 
@@ -134,6 +135,24 @@ const userSchema = new mongoose.Schema(
         ref: "User",
       },
     ],
+    isDepositPaid: {
+      type: Boolean,
+      default: false,
+    },
+    depositAmount: {
+      type: Number,
+      default: 0,
+    },
+    depositDate: {
+      type: Date,
+      default: null,
+    },
+    depositTransactionId: {
+      type: String,
+      required: [true, "Transaction Id is required"],
+      default: null,
+      trim: true,
+    },
 
     // ✅ Nominee Section
     nominee: {

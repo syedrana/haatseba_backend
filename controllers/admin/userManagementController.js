@@ -1,15 +1,58 @@
 const User = require("../../models/userModel");
 
-// 🟡 1. Get all pending approval users
+// 🔍 Parent search যোগ করা
+const buildSearchQuery = async (extra, search) => {
+  const query = { ...extra };
+
+  if (search && search.trim() !== "") {
+    const parentMatch = await User.find({
+      $or: [
+        { firstName: { $regex: search, $options: "i" } },
+        { lastName: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+        { phone: { $regex: search, $options: "i" } },
+      ],
+    }).select("_id");
+
+    const parentIds = parentMatch.map((p) => p._id);
+
+    query.$or = [
+      { firstName: { $regex: search, $options: "i" } },
+      { lastName: { $regex: search, $options: "i" } },
+      { email: { $regex: search, $options: "i" } },
+      { phone: { $regex: search, $options: "i" } },
+      { address: { $regex: search, $options: "i" } },
+      { parentId: { $in: parentIds } }, // 👈 পেরেন্ট দিয়েও সার্চ হবে
+    ];
+  }
+
+  return query;
+};
+
+
+// 🟡 1. Get Pending Users (search + pagination)
 const getPendingUsers = async (req, res) => {
   try {
-    const users = await User.find({
-      isApproved: false,
-      rejectedAt: null,   // 🚩 এখনো reject হয়নি
-    }).populate("firstName lastName email phone image").select("-password");
+    const { page = 1, limit = 10, search = "" } = req.query;
+
+    let query = { isApproved: false, rejectedAt: null };
+    query = await buildSearchQuery(query, search);
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const [users, count] = await Promise.all([
+      User.find(query)
+        .select("firstName lastName email phone image address isEmailVerified createdAt parentId")
+        .populate("parentId", "firstName lastName email phone image placementPosition")
+        .skip(skip)
+        .limit(parseInt(limit)),
+      User.countDocuments(query),
+    ]);
 
     return res.json({
-      count: users.length,
+      count,
+      totalPages: Math.ceil(count / limit),
+      currentPage: parseInt(page),
       users,
     });
   } catch (error) {
@@ -18,15 +61,29 @@ const getPendingUsers = async (req, res) => {
   }
 };
 
-// 🟢 2. Get all approved users
+// 🟢 2. Get Approved Users
 const getApprovedUsers = async (req, res) => {
   try {
-    const users = await User.find({
-      isApproved: true,
-    }).populate("firstName lastName email phone image").select("-password");
+    const { page = 1, limit = 10, search = "" } = req.query;
+
+    let query = { isApproved: true };
+    query = await buildSearchQuery(query, search);
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const [users, count] = await Promise.all([
+      User.find(query)
+        .select("firstName lastName email phone image address isEmailVerified createdAt parentId")
+        .populate("parentId", "firstName lastName email phone image placementPosition")
+        .skip(skip)
+        .limit(parseInt(limit)),
+      User.countDocuments(query),
+    ]);
 
     return res.json({
-      count: users.length,
+      count,
+      totalPages: Math.ceil(count / limit),
+      currentPage: parseInt(page),
       users,
     });
   } catch (error) {
@@ -35,17 +92,29 @@ const getApprovedUsers = async (req, res) => {
   }
 };
 
-// 🔴 3. Get all rejected users
+// 🔴 3. Get Rejected Users
 const getRejectedUsers = async (req, res) => {
   try {
-    const users = await User.find({
-      isRejected: true,
-      rejectedAt: { $ne: null }, // 🚩 যাদের reject করা হয়েছে
-      isApproved: false,         // safe check
-    }).populate("firstName lastName email phone image").select("-password");
+    const { page = 1, limit = 10, search = "" } = req.query;
+
+    let query = { isRejected: true, rejectedAt: { $ne: null }, isApproved: false };
+    query = await buildSearchQuery(query, search);
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const [users, count] = await Promise.all([
+      User.find(query)
+        .select("firstName lastName email phone image address isEmailVerified createdAt parentId")
+        .populate("parentId", "firstName lastName email phone image placementPosition")
+        .skip(skip)
+        .limit(parseInt(limit)),
+      User.countDocuments(query),
+    ]);
 
     return res.json({
-      count: users.length,
+      count,
+      totalPages: Math.ceil(count / limit),
+      currentPage: parseInt(page),
       users,
     });
   } catch (error) {
@@ -53,6 +122,7 @@ const getRejectedUsers = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
 
 // 🟢 Admin → Approve User
 const approveUser = async (req, res) => {
