@@ -163,7 +163,7 @@ const registerUser = async (req, res) => {
     }
 
     // Send email verification 
-    //await sendEmailVerification(newUser);
+    await sendEmailVerification(newUser);
 
     res.status(201).json({ 
       message: "User registered successfully. Please verify your email.", 
