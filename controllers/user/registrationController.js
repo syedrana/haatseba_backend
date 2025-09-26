@@ -14,10 +14,12 @@ const registerUser = async (req, res) => {
       password,
       address,
       referralCode,
-      nominee,
       placementPosition,
       depositTransactionId,
     } = req.body;
+
+    const nominee = JSON.parse(req.body.nominee);
+
 
     // 🔐 Validation
     if (!firstName?.trim() || !lastName?.trim()) {
@@ -78,7 +80,7 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ message: "Address is required and should be at least 5 characters." });
     }
 
-    if (!nominee?.firstName || !nominee?.lastName || !nominee?.relation || !nominee?.phone) {
+    if (!nominee?.firstName || !nominee?.lastName || !nominee?.relation || !nominee?.phone || !nominee?.address) {
       return res.status(400).json({ message: "Nominee details are required." });
     }
 
@@ -147,12 +149,14 @@ const registerUser = async (req, res) => {
       referredBy: referralCode?.toUpperCase() || null,
       parentId: parent?._id || null,
       placementPosition: parent ? placementPosition : null, // ✅ slot assign
-      childIndex: parent ? (placementPosition === "left" ? 0 : placementPosition === "middle" ? 1 : 2) : null,
+      childIndex: parent ? (placementPosition === "line one" ? 0 : placementPosition === "line two" ? 1 : 2) : null,
+      depositTransactionId: depositTransactionId,
       nominee: {
         firstName: nominee.firstName.trim(),
         lastName: nominee.lastName.trim(),
         relation: nominee.relation.trim(),
         phone: nominee.phone.trim(),
+        address: nominee.address.trim(),
       },
     });
 

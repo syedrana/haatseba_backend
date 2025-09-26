@@ -71,8 +71,7 @@ const userSchema = new mongoose.Schema(
 
     image: {
       type: String,
-      required: [true, "Image is required"],
-      default: null,      
+      required: [true, "Image is required"],     
       trim: true,
     },
     address: {
@@ -150,7 +149,6 @@ const userSchema = new mongoose.Schema(
     depositTransactionId: {
       type: String,
       required: [true, "Transaction Id is required"],
-      default: null,
       trim: true,
     },
 
