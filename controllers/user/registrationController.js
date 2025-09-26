@@ -16,6 +16,7 @@ const registerUser = async (req, res) => {
       referralCode,
       nominee,
       placementPosition,
+      depositTransactionId,
     } = req.body;
 
     // 🔐 Validation
@@ -25,6 +26,15 @@ const registerUser = async (req, res) => {
 
     if (!email?.trim() || !/^\S+@\S+\.\S+$/.test(email)) {
       return res.status(400).json({ message: "Valid email is required." });
+    }
+
+    const depositTransaction = await User.findOne({ depositTransactionId });
+    if (depositTransaction) {
+      return res.status(400).json({ message: "This deposit transaction id has been used before. ❌" });
+    }
+
+    if (!depositTransactionId?.trim()) {
+      return res.status(400).json({ message: "deposit transaction id are required." });
     }
 
     const existingUser = await User.findOne({ phone });
