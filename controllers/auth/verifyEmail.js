@@ -18,12 +18,12 @@ const verifyEmail = async (req, res) => {
     }
 
     // ✅ যদি আগেই ভেরিফাই হয়ে থাকে
-    if (user.isVerified) {
+    if (user.isEmailVerified) {
       return res.redirect(`${process.env.FRONTEND_BASE_URL}/email-verified`);
     }
 
     // ✅ এখন ভেরিফাই করে দাও
-    user.isVerified = true;
+    user.isEmailVerified = true;
     await user.save();
 
     return res.redirect(`${process.env.FRONTEND_BASE_URL}/email-verified`);

@@ -6,7 +6,7 @@ const sendEmailVerification = async (user) => {
     expiresIn: "1d",
   });
 
-  const verifyUrl = `${process.env.FRONTEND_BASE_URL}/verify-email?token=${token}`;
+  const verifyUrl = `${process.env.BACKEND_BASE_URL}/verify-email?token=${token}`;
 
   const subject = "Verify Your Email - Trust1x";
   const html = `

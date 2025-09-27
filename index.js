@@ -12,7 +12,7 @@ const upload = require("./middlewares/upload");
 // ✅ Helper
 const dbConnection = require("./helpers/dbConnection");
 
-// ✅ User Routes Controller
+// ✅ User Routes Controller-------------------------------------------------------------
 const registration = require("./controllers/user/registrationController");
 const verification = require("./controllers/user/verificationController");
 const login = require("./controllers/user/loginController");
@@ -20,8 +20,9 @@ const { getUserDashboard } = require("./controllers/user/dashboardController");
 const { getDownlineTree } = require("./controllers/user/treeController");
 const { requestWithdraw, getWalletBalance } = require("./controllers/user/withdrawController");
 const {getProfile, getOwnProfile, getDashboardProfile, updateProfile, updatePassword} = require("./controllers/user/profileController");
+const verifyEmail = require("./controllers/auth/verifyEmail");
 
-// 🟡 Admin Routes Controller
+// 🟡 Admin Routes Controller---------------------------------------------------------------
 const adminlogin = require("./controllers/admin/adminLoginController");
 const adminreg = require("./controllers/admin/adminRegController");
 const { getAdminSummary, getWithdrawTrend, getLatestWithdraws,} = require("./controllers/admin/dashboardController");
@@ -44,7 +45,8 @@ app.use(express.urlencoded({ limit: "5mb", extended: true }));
 // ✅ Static Files
 app.use("/uploads", express.static("uploads"));
 
-// ✅ User Routes
+// ✅ User Routes------------------------------------------------------------------------------
+
 app.post("/registration", multerErrorHandler(upload.single("image")), securapi, registration);
 app.get("/verification", securapi, verification);
 app.post("/login", securapi, login);
@@ -57,7 +59,10 @@ app.get("/getownprofile/:id", checklogin, getOwnProfile);
 app.get("/getdashboardprofile", checklogin, getDashboardProfile);
 app.put("/updateprofile", checklogin, updateProfile);
 
-// 🟡 Admin Routes
+    // Verify Email Controller
+app.get("/verify-email", verifyEmail);
+
+// 🟡 Admin Routes---------------------------------------------------------------------------
 
     // Admin login & rag controller
 app.post("/adminLogin", securapi, adminlogin);
@@ -86,7 +91,7 @@ app.patch("/rejectwithdraw/:id", checkadmin, rejectWithdraw);
 app.get("/transaction", checkadmin, transaction);
 app.get("/transactiondetails", checkadmin, transDetaiols);
 
-// ✅ Root Route (for Render test)
+// ✅ Root Route (for Render test)----------------------------------------------------------
 app.get("/", (req, res) => {
   res.send("✅ Haatseba Backend API is running...");
 });
