@@ -33,7 +33,7 @@ async function giveBonus(userId, level) {
   await bonus.save();
 
   // 🔑 Wallet এ ক্রেডিট করো
-  await creditWallet(userId, amount);
+  //await creditWallet(userId, amount);
 
   console.log(`🎁 Bonus Given → User: ${userId} | Level: ${level}`);
 }

@@ -30,10 +30,10 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ message: "Valid email is required." });
     }
 
-    const depositTransaction = await User.findOne({ depositTransactionId });
-    if (depositTransaction) {
-      return res.status(400).json({ message: "This deposit transaction id has been used before. ❌" });
-    }
+    // const depositTransaction = await User.findOne({ depositTransactionId });
+    // if (depositTransaction) {
+    //   return res.status(400).json({ message: "This deposit transaction id has been used before. ❌" });
+    // }
 
     if (!depositTransactionId?.trim()) {
       return res.status(400).json({ message: "deposit transaction id are required." });
@@ -88,8 +88,8 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ message: "Placement Position are required." });
     }
 
-    const emailExist = await User.findOne({ email });
-    if (emailExist) return res.status(400).json({ message: "Email already in use." });
+    // const emailExist = await User.findOne({ email });
+    // if (emailExist) return res.status(400).json({ message: "Email already in use." });
 
     // Check for referral code validity
     let parent = null;
@@ -177,7 +177,7 @@ const registerUser = async (req, res) => {
     }
 
     // Send email verification 
-    await sendEmailVerification(newUser);
+    //await sendEmailVerification(newUser);
 
     res.status(201).json({ 
       message: "User registered successfully. Please verify your email.", 
