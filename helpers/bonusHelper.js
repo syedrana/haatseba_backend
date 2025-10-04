@@ -2,7 +2,7 @@ const Bonus = require("../models/bonusModel");
 
 async function giveBonus(userId, level) {
   const bonusAmounts = {
-    1: 100,
+    1: 20,
     2: 200,
     3: 400,
     4: 800,

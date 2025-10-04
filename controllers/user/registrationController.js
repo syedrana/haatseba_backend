@@ -94,41 +94,41 @@ const registerUser = async (req, res) => {
     // Check for referral code validity
     let parent = null;
 
-//     if (referralCode) {
-//   parent = await User.findOne({ referralCode: referralCode.toUpperCase() });
-
-//   // প্রথম ইউজার বা কোন রেফারেল না থাকলে স্কিপ
-//   if (!parent && referralCode !== "AD00001") {
-//     return res.status(400).json({ message: "Invalid referral code." });
-//   }
-
-//   if (parent) {
-//     if (parent.children.length >= 3) {
-//       return res.status(400).json({ message: "Referral user already has 3 children." });
-//     }
-//     level = parent.level + 1;
-//   }
-// }
-
     if (referralCode) {
-      parent = await User.findOne({ referralCode: referralCode.toUpperCase() });
+  parent = await User.findOne({ referralCode: referralCode.toUpperCase() });
 
-      if (!parent) {
-        return res.status(400).json({ message: "Invalid referral code." });
-      }
+  // প্রথম ইউজার বা কোন রেফারেল না থাকলে স্কিপ
+  if (!parent && referralCode !== "AD00001") {
+    return res.status(400).json({ message: "Invalid referral code." });
+  }
 
-      if (parent.referralLocked || parent.children.length >= 3) {
-        return res.status(400).json({ message: "Referral user already has 3 children." });
-      }
-
-      // Check slot availability
-      const usedSlots = await User.find({ parentId: parent._id }).select("placementPosition");
-
-      if (usedSlots.some(u => u.placementPosition === placementPosition)) {
-        return res.status(400).json({ message: `This slot (${placementPosition}) already taken.` });
-      }
-
+  if (parent) {
+    if (parent.children.length >= 3) {
+      return res.status(400).json({ message: "Referral user already has 3 children." });
     }
+    level = parent.level + 1;
+  }
+}
+
+    // if (referralCode) {
+    //   parent = await User.findOne({ referralCode: referralCode.toUpperCase() });
+
+    //   if (!parent) {
+    //     return res.status(400).json({ message: "Invalid referral code." });
+    //   }
+
+    //   if (parent.referralLocked || parent.children.length >= 3) {
+    //     return res.status(400).json({ message: "Referral user already has 3 children." });
+    //   }
+
+    //   // Check slot availability
+    //   const usedSlots = await User.find({ parentId: parent._id }).select("placementPosition");
+
+    //   if (usedSlots.some(u => u.placementPosition === placementPosition)) {
+    //     return res.status(400).json({ message: `This slot (${placementPosition}) already taken.` });
+    //   }
+
+    // }
 
     // ✅ Upload image
     const imageResult = await uploadToCloudinary(req.file.buffer);
