@@ -40,10 +40,10 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ message: "deposit transaction id are required." });
     }
 
-    const existingUser = await User.findOne({ phone });
-    if (existingUser) {
-      return res.status(400).json({ message: "This phone number has been used before. ❌" });
-    }
+    // const existingUser = await User.findOne({ phone });
+    // if (existingUser) {
+    //   return res.status(400).json({ message: "This phone number has been used before. ❌" });
+    // }
 
     if (!phone?.trim() || !/^\d{10,15}$/.test(phone)) {
       return res.status(400).json({ message: "Valid phone number is required (10-15 digits)." });
