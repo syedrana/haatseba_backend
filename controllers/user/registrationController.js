@@ -1,7 +1,8 @@
 const User = require("../../models/userModel");
 const {updateUserLevel} = require("../../helpers/levelHelper");
 const uploadToCloudinary = require("../../helpers/uploadToCloudinaryHelper");
-const sendEmailVerification = require("../../utils/sendEmailVerification");    
+const sendEmailVerification = require("../../utils/sendEmailVerification");
+const generateUniqueReferralCode = require("../../utils/generateReferralCode");    
 
 
 const registerUser = async (req, res) => {
@@ -135,7 +136,9 @@ const registerUser = async (req, res) => {
     const imageUrl = imageResult.secure_url;
 
     // Generate unique referral code for the new user
-    const newReferralCode = (firstName.slice(0, 2) + Date.now().toString().slice(-5)).toUpperCase();
+    //const newReferralCode = (firstName.slice(0, 2) + Date.now().toString().slice(-5)).toUpperCase();
+
+    const newReferralCode = await generateUniqueReferralCode(firstName, lastName);
 
     const newUser = new User({
       firstName: firstName.trim(),
