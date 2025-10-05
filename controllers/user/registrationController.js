@@ -31,19 +31,9 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ message: "Valid email is required." });
     }
 
-    // const depositTransaction = await User.findOne({ depositTransactionId });
-    // if (depositTransaction) {
-    //   return res.status(400).json({ message: "This deposit transaction id has been used before. ❌" });
-    // }
-
     if (!depositTransactionId?.trim()) {
       return res.status(400).json({ message: "deposit transaction id are required." });
     }
-
-    // const existingUser = await User.findOne({ phone });
-    // if (existingUser) {
-    //   return res.status(400).json({ message: "This phone number has been used before. ❌" });
-    // }
 
     if (!phone?.trim() || !/^\d{10,15}$/.test(phone)) {
       return res.status(400).json({ message: "Valid phone number is required (10-15 digits)." });
@@ -89,16 +79,23 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ message: "Placement Position are required." });
     }
 
-    // if (emailExist) return res.status(400).json({ message: "Email already in use." });
 
     const emailExist = await User.findOne({ email });
-    
-    if (emailExist && emailExist.isEmailVerified === false) {
-      return res.status(400).json({
-        message: "This email is already used but not verified yet. Please verify your previous account first."
-      });
+
+    if (emailExist) {
+      if (emailExist.isEmailVerified === false) {
+        return res.status(400).json({
+          message: "This email is already used but not verified yet. Please verify your previous account first."
+        });
+      }
+
+      if (emailExist.isApproved === false) {
+        return res.status(400).json({
+          message: "This account is not approved yet. Please approve your previous account first."
+        });
+      }
     }
-    
+
     const isEmailVerifiedGlobally = emailExist?.isEmailVerified || false;
 
     // Check for referral code validity

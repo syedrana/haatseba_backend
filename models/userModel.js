@@ -31,6 +31,10 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    emailVerifiedAt: {
+      type: Date,
+      default: null,
+    },
     isApproved: {
       type: Boolean,
       default: false, // Admin approval required
