@@ -89,27 +89,36 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ message: "Placement Position are required." });
     }
 
-    // const emailExist = await User.findOne({ email });
     // if (emailExist) return res.status(400).json({ message: "Email already in use." });
+
+    const emailExist = await User.findOne({ email });
+    
+    if (emailExist && emailExist.isEmailVerified === false) {
+      return res.status(400).json({
+        message: "This email is already used but not verified yet. Please verify your previous account first."
+      });
+    }
+    
+    const isEmailVerifiedGlobally = emailExist?.isEmailVerified || false;
 
     // Check for referral code validity
     let parent = null;
 
     if (referralCode) {
-  parent = await User.findOne({ referralCode: referralCode.toUpperCase() });
+      parent = await User.findOne({ referralCode: referralCode.toUpperCase() });
 
-  // প্রথম ইউজার বা কোন রেফারেল না থাকলে স্কিপ
-  if (!parent && referralCode !== "AD00001") {
-    return res.status(400).json({ message: "Invalid referral code." });
-  }
+      // প্রথম ইউজার বা কোন রেফারেল না থাকলে স্কিপ
+      if (!parent && referralCode !== "SR04102025F9G7K8Q2T1") {
+        return res.status(400).json({ message: "Invalid referral code." });
+      }
 
-  if (parent) {
-    if (parent.children.length >= 3) {
-      return res.status(400).json({ message: "Referral user already has 3 children." });
+      if (parent) {
+        if (parent.children.length >= 3) {
+          return res.status(400).json({ message: "Referral user already has 3 children." });
+        }
+        level = parent.level + 1;
+      }
     }
-    level = parent.level + 1;
-  }
-}
 
     // if (referralCode) {
     //   parent = await User.findOne({ referralCode: referralCode.toUpperCase() });
@@ -144,6 +153,7 @@ const registerUser = async (req, res) => {
       firstName: firstName.trim(),
       lastName: lastName.trim(),
       email: email.trim().toLowerCase(),
+      isEmailVerified: isEmailVerifiedGlobally,
       phone: phone.trim(),
       password: password,
       image: imageUrl,
@@ -180,7 +190,7 @@ const registerUser = async (req, res) => {
     }
 
     // Send email verification 
-    //await sendEmailVerification(newUser);
+    await sendEmailVerification(newUser);
 
     res.status(201).json({ 
       message: "User registered successfully. Please verify your email.", 

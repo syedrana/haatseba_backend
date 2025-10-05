@@ -18,8 +18,9 @@ const getUserDashboard = async (req, res) => {
       .limit(10);
 
     // --- Direct Referrals Count
-    const user = await User.findById(userId).select("children level");
+    const user = await User.findById(userId).select("children level referralCode");
     const directReferrals = user?.children?.length || 0;
+    const referralCode = user.referralCode;
 
     // --- Downline Count (recursive বা সহজে শুধু count)
     const downlineCount = await getDownlineCount(userId);
@@ -34,6 +35,7 @@ const getUserDashboard = async (req, res) => {
       walletBalance: wallet?.balance || 0,
       transactions,
       directReferrals,
+      referralCode,
       downlineCount,
       currentLevel: user?.level || 0,
       totalBonus: totalBonus[0]?.total || 0,

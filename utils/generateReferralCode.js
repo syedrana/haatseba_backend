@@ -13,7 +13,7 @@ async function generateUniqueReferralCode(firstName, lastName) {
   const year = now.getFullYear();
 
   // 10-অক্ষরের random প্রিফিক্স (secure)
-  const randomPart = crypto.randomBytes(5).toString("base64").replace(/[^A-Z0-9]/gi, "").slice(0, 10).toUpperCase();
+  const randomPart = crypto.randomBytes(8).toString("base64").replace(/[^A-Z0-9]/gi, "").slice(0, 10).toUpperCase();
 
   // পুরো কোড তৈরি
   let referralCode = `${firstLetter}${lastLetter}${day}${month}${year}${randomPart}`;
@@ -21,7 +21,7 @@ async function generateUniqueReferralCode(firstName, lastName) {
   // ইউনিক কিনা চেক করো
   let exists = await User.exists({ referralCode });
   while (exists) {
-    const newRandom = crypto.randomBytes(5).toString("base64").replace(/[^A-Z0-9]/gi, "").slice(0, 10).toUpperCase();
+    const newRandom = crypto.randomBytes(8).toString("base64").replace(/[^A-Z0-9]/gi, "").slice(0, 10).toUpperCase();
     referralCode = `${firstLetter}${lastLetter}${day}${month}${year}${newRandom}`;
     exists = await User.exists({ referralCode });
   }

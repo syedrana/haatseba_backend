@@ -21,6 +21,7 @@ const { getDownlineTree } = require("./controllers/user/treeController");
 const { requestWithdraw, getWalletBalance } = require("./controllers/user/withdrawController");
 const {getProfile, getOwnProfile, getDashboardProfile, updateProfile, updatePassword} = require("./controllers/user/profileController");
 const verifyEmail = require("./controllers/auth/verifyEmail");
+const resendVerificationEmail = require("./controllers/auth/resendVerification");
 
 // 🟡 Admin Routes Controller---------------------------------------------------------------
 const adminlogin = require("./controllers/admin/adminLoginController");
@@ -62,6 +63,7 @@ app.put("/updateprofile", checklogin, updateProfile);
 
     // Verify Email Controller
 app.get("/verify-email", verifyEmail);
+app.post("/resend-verification", resendVerificationEmail);
 
 // 🟡 Admin Routes---------------------------------------------------------------------------
 
