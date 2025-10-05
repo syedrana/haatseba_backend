@@ -91,7 +91,7 @@ const registerUser = async (req, res) => {
 
       if (emailExist.isApproved === false) {
         return res.status(400).json({
-          message: "This account is not approved yet. Please approve your previous account first."
+          message: "This email is already used but not approved yet. Please approve your previous account first."
         });
       }
     }
