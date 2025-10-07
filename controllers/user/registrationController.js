@@ -172,6 +172,12 @@ const registerUser = async (req, res) => {
 
     await newUser.save();
 
+    res.status(201).json({ 
+      success: true,
+      message: "User registered successfully. Please verify your email.", 
+      user: newUser 
+    });
+
 
 
     // Push to parent's children array
@@ -187,16 +193,23 @@ const registerUser = async (req, res) => {
     }
 
     // Send email verification 
-    await sendEmailVerification(newUser);
+    setTimeout(async () => {
+      try {
+        await sendEmailVerification(newUser);
+        console.log(`✅ Verification email sent to ${newUser.email}`);
+      } catch (emailErr) {
+        console.error("❌ Email sending failed:", emailErr.message);
+      }
+    }, 0);
 
-    res.status(201).json({ 
-      message: "User registered successfully. Please verify your email.", 
-      user: newUser 
-    });
+    
 
   } catch (error) {
     console.error("Registration error:", error.message);
-    res.status(500).json({ message: "Server error during registration." });
+    res.status(500).json({
+      success: false,
+      message: "Internal server error during registration.",
+    });
   }
 };
 
