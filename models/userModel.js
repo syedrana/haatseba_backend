@@ -39,11 +39,23 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false, // Admin approval required
     },
+    approvedAt: {
+      type: Date,
+      default: null,
+    },
     isRejected: {
       type: Boolean,
       default: false, 
     },
     rejectedAt: {
+      type: Date,
+      default: null,
+    },
+    isVendor: {
+      type: Boolean,
+      default: false, // 🔹 অ্যাডমিন এপ্রুভ না করা পর্যন্ত false
+    },
+    vendorAt: {
       type: Date,
       default: null,
     },

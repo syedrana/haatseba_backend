@@ -26,11 +26,46 @@ const resendVerificationEmail = require("./controllers/auth/resendVerification")
 // 🟡 Admin Routes Controller---------------------------------------------------------------
 const adminlogin = require("./controllers/admin/adminLoginController");
 const adminreg = require("./controllers/admin/adminRegController");
-const { getAdminSummary, getWithdrawTrend, getLatestWithdraws,} = require("./controllers/admin/dashboardController");
-const { getPendingUsers, getApprovedUsers, getRejectedUsers, approveUser, rejectUser, } = require("./controllers/admin/userManagementController");
-const { getPendingWithdrawal, getApprovedWithdrawal, getRejectedWithdrawal, approveWithdraw, rejectWithdraw, } = require("./controllers/admin/withdrawManagementController");
+
+const { 
+    getAdminSummary, 
+    getWithdrawTrend, 
+    getLatestWithdraws,
+} = require("./controllers/admin/dashboardController");
+
+const { 
+    getPendingUsers, 
+    getApprovedUsers, 
+    getRejectedUsers, 
+    approveUser, 
+    rejectUser, 
+} = require("./controllers/admin/userManagementController");
+
+const { 
+    getPendingWithdrawal, 
+    getApprovedWithdrawal, 
+    getRejectedWithdrawal, 
+    approveWithdraw, 
+    rejectWithdraw, 
+} = require("./controllers/admin/withdrawManagementController");
+
 const {transaction, transDetaiols} = require("./controllers/admin/transactionManagementController");
 const { getuserTree } = require("./controllers/admin/downlinetreeController.js");
+
+// ✅ Vendor Routes Controller-------------------------------------------------------------------
+const {
+    createVendorRequest,
+    getAllVendorRequests,
+    approveVendorRequest,
+    rejectVendorRequest,
+    getVendorRequestById,
+    updateVendorRequestStatus,
+    getMyVendorRequest,
+} = require("./controllers/vendor/vendorController");
+const {createProduct} = require("./controllers/vendor/productController");
+const { createCategory, getCategories } = require("./controllers/vendor/categoryController");
+const { createBrand, getBrands } = require("./controllers/vendor/brandController");
+
 
 const app =express();
 
@@ -96,6 +131,24 @@ app.get("/transactiondetails", checkadmin, transDetaiols);
 
     // Downlinetree Controlller
 app.get("/usertree/:id", checkadmin,  getuserTree);
+
+// ✅ Vendor Route--------------------------------------------------------------------------
+    //user
+app.post("/vendorrequest", checklogin, multerErrorHandler(upload.array("documents", 6)), createVendorRequest);
+app.get("/myrequest", checklogin, getMyVendorRequest);
+app.post("/vendoraddproduct", checklogin, multerErrorHandler(upload.single("image")), createProduct);
+app.post("/createcategory", checklogin, createCategory);
+app.get("/allcategories", checklogin, getCategories);
+app.post("/createbrand", checklogin, createBrand);
+app.get("/allbrands", checklogin, getBrands);
+
+    //Admin
+app.get("/vendor/requests", checkadmin, getAllVendorRequests);
+app.get("/vendor/requests/:id", checkadmin, getVendorRequestById);
+app.put("/approvevendorrequest/:id", checkadmin, approveVendorRequest);
+app.put("/rejectvendorrequest/:id", checkadmin, rejectVendorRequest);
+app.patch("/vendor/request/:id", checkadmin, updateVendorRequestStatus);
+
 
 // ✅ Root Route (for Render test)----------------------------------------------------------
 app.get("/", (req, res) => {

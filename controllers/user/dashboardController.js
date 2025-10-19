@@ -26,10 +26,10 @@ const getUserDashboard = async (req, res) => {
     const downlineCount = await getDownlineCount(userId);
 
     // --- Total Bonus Earned
-    const totalBonus = await Bonus.aggregate([
-      { $match: { userId: user._id } },
-      { $group: { _id: null, total: { $sum: { $toDouble: "$bonusAmount" } } } }
-    ]);
+    // const totalBonus = await Bonus.aggregate([
+    //   { $match: { userId: user._id } },
+    //   { $group: { _id: null, total: { $sum: { $toDouble: "$bonusAmount" } } } }
+    // ]);
 
     res.status(200).json({
       walletBalance: wallet?.balance || 0,
@@ -38,7 +38,7 @@ const getUserDashboard = async (req, res) => {
       referralCode,
       downlineCount,
       currentLevel: user?.level || 0,
-      totalBonus: totalBonus[0]?.total || 0,
+      //totalBonus: totalBonus[0]?.total || 0,
     });
 
   } catch (error) {
