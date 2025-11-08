@@ -17,10 +17,10 @@ const bonusSchema = new mongoose.Schema({
       },
     },
     bonusAmount: {
-      type: String, 
+      type: mongoose.Schema.Types.Mixed, 
       required: [true, "Bonus amount is required"],
-      trim: true,
-      maxlength: [100, "Bonus amount cannot exceed 100 characters"],
+      //trim: true,
+      //maxlength: [100, "Bonus amount cannot exceed 100 characters"],
     },
     rewardType: {  
       type: String,

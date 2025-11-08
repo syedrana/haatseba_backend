@@ -1,7 +1,7 @@
 const User = require("../../models/userModel");
 const {updateUserLevel} = require("../../helpers/levelHelper");
 const uploadToCloudinary = require("../../helpers/uploadToCloudinaryHelper");
-const sendEmailVerification = require("../../utils/sendEmailVerification");
+//const sendEmailVerification = require("../../utils/sendEmailVerification");
 const generateUniqueReferralCode = require("../../utils/generateReferralCode");    
 
 
@@ -83,11 +83,11 @@ const registerUser = async (req, res) => {
     const emailExist = await User.findOne({ email });
 
     if (emailExist) {
-      if (emailExist.isEmailVerified === false) {
-        return res.status(400).json({
-          message: "This email is already used but not verified yet. Please verify your previous account first."
-        });
-      }
+      // if (emailExist.isEmailVerified === false) {
+      //   return res.status(400).json({
+      //     message: "This email is already used but not verified yet. Please verify your previous account first."
+      //   });
+      // }
 
       if (emailExist.isApproved === false) {
         return res.status(400).json({
@@ -193,14 +193,14 @@ const registerUser = async (req, res) => {
     }
 
     // Send email verification 
-    setTimeout(async () => {
-      try {
-        await sendEmailVerification(newUser);
-        console.log(`✅ Verification email sent to ${newUser.email}`);
-      } catch (emailErr) {
-        console.error("❌ Email sending failed:", emailErr.message);
-      }
-    }, 0);
+    // setTimeout(async () => {
+    //   try {
+    //     await sendEmailVerification(newUser);
+    //     console.log(`✅ Verification email sent to ${newUser.email}`);
+    //   } catch (emailErr) {
+    //     console.error("❌ Email sending failed:", emailErr.message);
+    //   }
+    // }, 0);
 
     
 

@@ -18,7 +18,7 @@ const verification = require("./controllers/user/verificationController");
 const login = require("./controllers/user/loginController");
 const { getUserDashboard } = require("./controllers/user/dashboardController");
 const { getDownlineTree } = require("./controllers/user/treeController");
-const { requestWithdraw, getWalletBalance } = require("./controllers/user/withdrawController");
+const { requestWithdraw, getWalletBalance, getWithdrawHistory } = require("./controllers/user/withdrawController");
 const {getProfile, getOwnProfile, getDashboardProfile, updateProfile, updatePassword} = require("./controllers/user/profileController");
 const verifyEmail = require("./controllers/auth/verifyEmail");
 const resendVerificationEmail = require("./controllers/auth/resendVerification");
@@ -48,6 +48,13 @@ const {
     approveWithdraw, 
     rejectWithdraw, 
 } = require("./controllers/admin/withdrawManagementController");
+
+const {
+  createBonusPlan,
+  getAllBonusPlans,
+  updateBonusPlan,
+  deleteBonusPlan,
+} = require("./controllers/admin/bonusPlanController");
 
 const {transaction, transDetaiols} = require("./controllers/admin/transactionManagementController");
 const { getuserTree } = require("./controllers/admin/downlinetreeController.js");
@@ -91,6 +98,7 @@ app.get("/userdashboard", checklogin, getUserDashboard);
 app.get("/userdownlinetree", checklogin, getDownlineTree);
 app.get("/walletbalance", checklogin, getWalletBalance);
 app.post("/requestwithdraw", checklogin, requestWithdraw);
+app.get("/withdrawhistory", checklogin, getWithdrawHistory);
 app.get("/getprofile", checklogin, getProfile);
 app.get("/getownprofile/:id", checklogin, getOwnProfile);
 app.get("/getdashboardprofile", checklogin, getDashboardProfile);
@@ -124,6 +132,12 @@ app.get("/approvedwithdrawal", checkadmin, getApprovedWithdrawal);
 app.get("/rejectedwithdrawal", checkadmin, getRejectedWithdrawal);
 app.patch("/approvewithdraw/:id", checkadmin, approveWithdraw);
 app.patch("/rejectwithdraw/:id", checkadmin, rejectWithdraw);
+
+    // Bonus Plan Controller
+app.post("/createbonusplan", checkadmin, createBonusPlan);
+app.get("/getallbonusplans", checklogin, getAllBonusPlans);
+app.put("/updatebonusplan/:id", checkadmin, updateBonusPlan);
+app.delete("/deletebonusplan/:id", checkadmin, deleteBonusPlan);
 
     // Transsaction Management Controller
 app.get("/transaction", checkadmin, transaction);

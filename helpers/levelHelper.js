@@ -27,7 +27,7 @@ async function updateUserLevel(userId) {
   // ----------------------
   // Part 1 → Level 1 to 5
   // ----------------------
-  if (currentLevel < 5) {
+  if (currentLevel < 17) {
     // level 0 থেকে 5 পর্যন্ত check করার জন্য dynamic rule
     const requiredChildLevel = currentLevel; // child-দের এই লেভেল থাকতে হবে
     const targetLevel = currentLevel + 1;    // পরবর্তী লেভেল
@@ -64,39 +64,39 @@ async function updateUserLevel(userId) {
   // ----------------------
   // Part 2 → Level 6 to 17
   // ----------------------
-  else if (currentLevel >= 5 && currentLevel < 17) {
-    const downlineCount = await getDownlineCount(user._id);
+  // else if (currentLevel >= 5 && currentLevel < 17) {
+  //   const downlineCount = await getDownlineCount(user._id);
 
-    const levelTargets = {
-      6: 729,
-      7: 2187,
-      8: 6561,
-      9: 19683,
-      10: 59049,
-      11: 177147,
-      12: 531441,
-      13: 1594323,
-      14: 4782969,
-      15: 14348907,
-      16: 43046721,
-      17: 129140163
-    };
+  //   const levelTargets = {
+  //     6: 729,
+  //     7: 2187,
+  //     8: 6561,
+  //     9: 19683,
+  //     10: 59049,
+  //     11: 177147,
+  //     12: 531441,
+  //     13: 1594323,
+  //     14: 4782969,
+  //     15: 14348907,
+  //     16: 43046721,
+  //     17: 129140163
+  //   };
 
-    const nextLevel = currentLevel + 1;
-    if (downlineCount >= levelTargets[nextLevel]) {
-      user.level = nextLevel;
-      await user.save();
+  //   const nextLevel = currentLevel + 1;
+  //   if (downlineCount >= levelTargets[nextLevel]) {
+  //     user.level = nextLevel;
+  //     await user.save();
 
-      // 🎁 Bonus Save
-      await giveBonus(user._id, nextLevel);
+  //     // 🎁 Bonus Save
+  //     await giveBonus(user._id, nextLevel);
 
-      console.log(`${user.firstName} এখন ${user.level} লেভেলে ✅`);
+  //     console.log(`${user.firstName} এখন ${user.level} লেভেলে ✅`);
 
-      if (user.parentId) {
-        await updateUserLevel(user.parentId);
-      }
-    }
-  }
+  //     if (user.parentId) {
+  //       await updateUserLevel(user.parentId);
+  //     }
+  //   }
+  // }
 }
 
 module.exports = { updateUserLevel };

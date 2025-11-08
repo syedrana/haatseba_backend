@@ -38,7 +38,7 @@ const requestWithdraw = async (req, res) => {
 
     // 2️⃣ Check Wallet Balance
     const wallet = await Wallet.findOne({ userId });
-    if (!wallet || wallet.balance < amount) {
+    if (!wallet || wallet.cashBalance < amount) {
       return res.status(400).json({ message: "Insufficient balance" });
     }
 
@@ -63,8 +63,21 @@ const requestWithdraw = async (req, res) => {
 };
 
 
+// ✅ User Withdraw History
+const getWithdrawHistory = async (req, res) => {
+  try {
+    const userId = req.userid;
+    const history = await Withdraw.find({ userId }).sort({ createdAt: -1 });
+    res.json(history);
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
+
 
 module.exports = {
   getWalletBalance,
   requestWithdraw,
+  getWithdrawHistory,
 };
