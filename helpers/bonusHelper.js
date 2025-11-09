@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const Bonus = require("../models/bonusModel");
 const Wallet = require("../models/walletModel");
+const BonusPlan = require("../models/bonusPlanModel");
 
 /**
  * 🎁 giveBonus()
