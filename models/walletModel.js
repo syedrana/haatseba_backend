@@ -10,6 +10,7 @@ const walletSchema = new mongoose.Schema({
   cashBalance: {
     type: Number,
     default: 0, // টাকা
+    min: [0, "Balance cannot be negative"],
   },
   rewards: [
     {

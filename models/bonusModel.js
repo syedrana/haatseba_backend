@@ -24,7 +24,7 @@ const bonusSchema = new mongoose.Schema({
     },
     rewardType: {  
       type: String,
-      enum: ["cash", "gift", "product"],
+      enum: ["cash", "product", "other"],
       default: "cash",
     },
     status: {

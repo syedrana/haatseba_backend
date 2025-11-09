@@ -7,14 +7,20 @@ const bonusPlanSchema = new mongoose.Schema({
     unique: true,
   },
   bonusAmount: {
-    type: mongoose.Schema.Types.Mixed, // number or string
+    type: mongoose.Schema.Types.Mixed,
     required: true,
+    validate: {
+      validator: function (v) {
+        return typeof v === "number" || typeof v === "string";
+      },
+      message: "Bonus amount must be a number or string",
+    },
   },
   rewardType: {
     type: String,
     enum: ["cash", "product", "other"],
     required: true,
-    default: "",
+    default: "cash",
   },
   condition: {
     type: String,
