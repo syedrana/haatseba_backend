@@ -139,6 +139,8 @@ const approveUser = async (req, res) => {
 
     user.isApproved = true;
     user.approvedAt = new Date();
+    user.isDepositPaid = true;
+    user.depositAmount = 20;
     await user.save();
 
     // ✅ Update pending list

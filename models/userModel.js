@@ -39,6 +39,11 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false, // Admin approval required
     },
+    approvedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Admin", // Admin is a user with role='admin'
+      default: null,
+    },
     approvedAt: {
       type: Date,
       default: null,
@@ -154,11 +159,7 @@ const userSchema = new mongoose.Schema(
     },
     depositAmount: { 
       type: Number,
-      default: 0,
-    },
-    depositDate: {
-      type: Date,
-      default: null,
+      default: 20,
     },
     depositTransactionId: {
       type: String,
