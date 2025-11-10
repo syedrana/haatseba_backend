@@ -1,4 +1,5 @@
 const User = require("../../models/userModel");
+const {updateUserLevel} = require("../../helpers/levelHelper");
 
 // 🔍 Parent search যোগ করা
 const buildSearchQuery = async (extra, search) => {
@@ -137,8 +138,44 @@ const approveUser = async (req, res) => {
       return res.status(400).json({ message: "User already approved" });
     }
 
+    // 🔗 প্যারেন্ট আছে কিনা দেখা দরকার
+    let parent = null;
+    if (user.parentId) {
+      parent = await User.findById(user.parentId);
+      if (!parent) {
+        return res.status(400).json({
+          success: false,
+          message: "Parent not found. Cannot approve user.",
+        });
+      }
+
+      // ✅ আবারও চেক করে নিই যেন slot আগেই কেউ না নেয়
+      const slotTaken = await User.findOne({
+        parentId: parent._id,
+        placementPosition: user.placementPosition,
+        isApproved: true,
+        _id: { $ne: user._id },
+      });
+
+      if (slotTaken) {
+        return res.status(400).json({
+          success: false,
+          message: `Slot (${user.placementPosition}) already occupied by another approved user.`,
+        });
+      }
+
+      // 🔗 এখন parent.children-এ push করা হবে
+      parent.children.push(user._id);
+      await parent.save();
+
+      // ⚙️ লেভেল আপডেট
+      await updateUserLevel(parent._id);
+    }
+
     user.isApproved = true;
     user.approvedAt = new Date();
+    user.isSlotReserved = false;
+    user.reservedAt = null;
     user.isDepositPaid = true;
     user.depositAmount = 20;
     await user.save();
@@ -178,6 +215,8 @@ const rejectUser = async (req, res) => {
 
     user.isApproved = false;
     user.isRejected = true,
+    user.isSlotReserved = false; // unlock the slot
+    user.reservedAt = null;
     user.rejectedAt = new Date();
     await user.save();
 

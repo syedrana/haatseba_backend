@@ -137,6 +137,14 @@ const userSchema = new mongoose.Schema(
       max: 2, 
       default: null 
     },
+    isSlotReserved: {
+      type: Boolean,
+      default: false, 
+    },
+    reservedAt: {
+      type: Date,
+      default: null, 
+    },
     level: {
       type: Number,
       default: 0,
