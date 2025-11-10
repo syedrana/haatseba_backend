@@ -49,7 +49,7 @@ const getUserDashboard = async (req, res) => {
     .limit(17);
 
     res.status(200).json({
-      walletBalance: wallet?.balance || 0,
+      walletBalance: wallet?.cashBalance || 0,
       transactions,
       directReferrals,
       referralCode,
