@@ -126,6 +126,8 @@ app.get("/rejectedusers", checkadmin, getRejectedUsers);
 app.patch("/approveuser/:id", checkadmin, approveUser);
 app.patch("/rejectuser/:id", checkadmin, rejectUser);
 
+app.get("/getuserprofile/:id", checkadmin, getOwnProfile);
+
     // Withdraw Management Controller
 app.get("/pendingwithdrawal", checkadmin,  getPendingWithdrawal);
 app.get("/approvedwithdrawal", checkadmin, getApprovedWithdrawal);
