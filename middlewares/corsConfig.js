@@ -3,6 +3,7 @@ const cors = require("cors");
 const allowedOrigins = [
   "http://localhost:3000",
   "https://haatseba.vercel.app",
+  "https://www.haatseba.com",
 ];
 
 const corsConfig = cors({
