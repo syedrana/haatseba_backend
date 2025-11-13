@@ -336,37 +336,41 @@ const registerUser = async (req, res) => {
     if (referralCode) {
       parent = await User.findOne({ referralCode: referralCode.toUpperCase() });
 
-      if (!parent && referralCode !== "SR04102025F9G7K8Q2T1") {
+      // ✅ fallback master referral code allow
+      const isMasterCode = referralCode === "SR04102025F9G7K8Q2T1";
+
+      if (!parent && !isMasterCode) {
         return res.status(400).json({ message: "Invalid referral code." });
       }
 
-      if (parent.referralLocked) {
-        return res.status(400).json({ message: "Referral user is locked." });
-      }
+      if (parent) {
+        if (parent.referralLocked) {
+          return res.status(400).json({ message: "Referral user is locked." });
+        }
 
-      // ✅ Total children count (approved + reserved)
-      const childrenCount = await User.countDocuments({
-        parentId: parent._id,
-        $or: [{ isApproved: true }, { isSlotReserved: true }],
-      });
-
-      if (childrenCount >= 3) {
-        return res.status(400).json({ message: "Referral user already has 3 children or reserved slots." });
-      }
-
-      // ✅ এখন check করা হবে slot রিজার্ভ কিনা
-      const slotTakenOrReserved = await User.findOne({
-        parentId: parent._id,
-        placementPosition,
-        $or: [{ isApproved: true }, { isSlotReserved: true }],
-      });
-
-      if (slotTakenOrReserved) {
-        return res.status(400).json({
-          message: `Slot (${placementPosition}) is already taken or reserved.`,
+        // ✅ Total children count (approved + reserved)
+        const childrenCount = await User.countDocuments({
+          parentId: parent._id,
+          $or: [{ isApproved: true }, { isSlotReserved: true }],
         });
-      }
 
+        if (childrenCount >= 3) {
+          return res.status(400).json({ message: "Referral user already has 3 children or reserved slots." });
+        }
+
+        // ✅ এখন check করা হবে slot রিজার্ভ কিনা
+        const slotTakenOrReserved = await User.findOne({
+          parentId: parent._id,
+          placementPosition,
+          $or: [{ isApproved: true }, { isSlotReserved: true }],
+        });
+
+        if (slotTakenOrReserved) {
+          return res.status(400).json({
+            message: `Slot (${placementPosition}) is already taken or reserved.`,
+          });
+        }
+      }
     }
 
     // ✅ Upload image

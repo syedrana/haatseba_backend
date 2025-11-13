@@ -164,7 +164,7 @@ async function giveBonus(userId, level) {
       return;
     }
 
-    const { bonusAmount, rewardType } = plan;
+    const { bonusAmount, costValue, rewardType } = plan;
 
     if (!bonusAmount) {
       console.log(`❌ Bonus amount missing for Level ${level}`);
@@ -176,10 +176,11 @@ async function giveBonus(userId, level) {
     const bonus = await Bonus.create(
       [
         {
-          userId,
-          level,
-          bonusAmount,
-          rewardType,
+          userId: userId,
+          level: level,
+          bonusAmount: bonusAmount,
+          rewardType: rewardType,
+          costValue: costValue,
           status: "pending",
           note: `Auto bonus assigned for level ${level}`,
         },

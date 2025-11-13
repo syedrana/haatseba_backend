@@ -16,6 +16,11 @@ const bonusPlanSchema = new mongoose.Schema({
       message: "Bonus amount must be a number or string",
     },
   },
+  costValue: {
+    type: Number,
+    default: 0,
+    min: 0,
+  },
   rewardType: {
     type: String,
     enum: ["cash", "product", "other"],
@@ -25,6 +30,7 @@ const bonusPlanSchema = new mongoose.Schema({
   condition: {
     type: String,
     required: true,
+    trim: true,
     default: "",
   },
   status: {

@@ -27,6 +27,15 @@ const bonusSchema = new mongoose.Schema({
       enum: ["cash", "product", "other"],
       default: "cash",
     },
+    costValue: {
+      type: Number,
+      default: 0, 
+      min: 0,
+    },
+    hasBonus: {
+      type: Boolean,
+      default: true, 
+    },
     status: {
       type: String,
       enum: {
