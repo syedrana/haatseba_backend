@@ -23,6 +23,9 @@ const {getProfile, getOwnProfile, getDashboardProfile, updateProfile, updatePass
 const verifyEmail = require("./controllers/auth/verifyEmail");
 const resendVerificationEmail = require("./controllers/auth/resendVerification");
 
+    // Rewards Controller
+const {getMyRewards} = require("./controllers/user/rewardsController.js");
+
 // 🟡 Admin Routes Controller---------------------------------------------------------------
 const adminlogin = require("./controllers/admin/adminLoginController");
 const adminreg = require("./controllers/admin/adminRegController");
@@ -103,6 +106,9 @@ app.get("/getprofile", checklogin, getProfile);
 app.get("/getownprofile/:id", checklogin, getOwnProfile);
 app.get("/getdashboardprofile", checklogin, getDashboardProfile);
 app.put("/updateprofile", checklogin, updateProfile);
+
+    // Rewards Controller
+app.get("/getMyRewards", checklogin, getMyRewards);
 
     // Verify Email Controller
 app.get("/verify-email", verifyEmail);
