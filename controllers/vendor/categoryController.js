@@ -1,5 +1,5 @@
 // controllers/categoryController.js
-const Category = require("../../models/categoryModel");
+const Category = require("../../models/vendor/categoryModel");
 
 // 🟢 Create Category (Admin)
 const createCategory = async (req, res) => {

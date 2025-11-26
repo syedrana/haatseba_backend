@@ -1,5 +1,5 @@
 // controllers/brandController.js
-const Brand = require("../../models/brandModel");
+const Brand = require("../../models/vendor/brandModel");
 
 // 🟢 Create Brand (Admin)
 const createBrand = async (req, res) => {

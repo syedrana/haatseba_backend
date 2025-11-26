@@ -1,5 +1,5 @@
-const Product = require("../../models/vendorproductModel");
-const Vendor = require("../../models/vendorRequestModel");
+const Product = require("../../models/vendor/vendorproductModel");
+const Vendor = require("../../models/vendor/vendorRequestModel");
 const User = require("../../models/userModel");
 const uploadToCloudinary = require("../../helpers/uploadToCloudinaryHelper");
 

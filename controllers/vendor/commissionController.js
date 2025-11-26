@@ -1,8 +1,8 @@
 const mongoose = require("mongoose");
-const Commission = require("../../models/commissionModel");
-const CommissionHistory = require("../../models/commissionHistoryModel");
-const Category = require("../../models/categoryModel");
-const Vendor = require("../../models/vendorRequestModel");
+const Commission = require("../../models/vendor/commissionModel");
+const CommissionHistory = require("../../models/vendor/commissionHistoryModel");
+const Category = require("../../models/vendor/categoryModel");
+const Vendor = require("../../models/vendor/vendorRequestModel");
 
 // 🟢 Create or Update Commission (with History)
 const setCommission = async (req, res) => {

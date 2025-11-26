@@ -182,35 +182,35 @@ async function giveBonus(userId, level) {
           rewardType: rewardType,
           costValue: costValue,
           status: "pending",
-          note: `Auto bonus assigned for level ${level}`,
+          note: `Bonus assigned for level ${level}`,
         },
       ],
       { session }
     );
 
-    // 🔹 3️⃣ Get or Create Wallet
-    let wallet = await Wallet.findOne({ userId }).session(session);
-    if (!wallet) {
-      wallet = await Wallet.create([{ userId, cashBalance: 0, rewards: [] }], { session });
-      wallet = wallet[0]; // because create() returns array when using session
-    }
+    // // 🔹 3️⃣ Get or Create Wallet
+    // let wallet = await Wallet.findOne({ userId }).session(session);
+    // if (!wallet) {
+    //   wallet = await Wallet.create([{ userId, cashBalance: 0, rewards: [] }], { session });
+    //   wallet = wallet[0]; // because create() returns array when using session
+    // }
 
-    // 🔹 4️⃣ Apply Bonus to Wallet
-    if (rewardType === "cash" && typeof bonusAmount === "number") {
-      wallet.cashBalance = (wallet.cashBalance || 0) + bonusAmount;
-      wallet.rewards.push({
-        item: `Cash Bonus ৳${bonusAmount}`,
-        date: new Date(),
-      });
-    } else {
-      // Product / Other Reward
-      wallet.rewards.push({
-        item: typeof bonusAmount === "string" ? bonusAmount : `Reward for Level ${level}`,
-        date: new Date(),
-      });
-    }
+    // // 🔹 4️⃣ Apply Bonus to Wallet
+    // if (rewardType === "cash" && typeof bonusAmount === "number") {
+    //   wallet.cashBalance = (wallet.cashBalance || 0) + bonusAmount;
+    //   wallet.rewards.push({
+    //     item: `Cash Bonus ৳${bonusAmount}`,
+    //     date: new Date(),
+    //   });
+    // } else {
+    //   // Product / Other Reward
+    //   wallet.rewards.push({
+    //     item: typeof bonusAmount === "string" ? bonusAmount : `Reward for Level ${level}`,
+    //     date: new Date(),
+    //   });
+    // }
 
-    await wallet.save({ session });
+    // await wallet.save({ session });
 
     // 🔹 5️⃣ Commit Transaction
     await session.commitTransaction();

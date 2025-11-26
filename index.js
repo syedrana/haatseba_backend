@@ -13,29 +13,52 @@ const upload = require("./middlewares/upload");
 const dbConnection = require("./helpers/dbConnection");
 
 // ✅ User Routes Controller-------------------------------------------------------------
+    
+    // User registration
 const registration = require("./controllers/user/registrationController");
+
+    // User verification
 const verification = require("./controllers/user/verificationController");
+
+    // User login
 const login = require("./controllers/user/loginController");
+
+    // User dashboard
 const { getUserDashboard } = require("./controllers/user/dashboardController");
+
+    // User tree
 const { getDownlineTree } = require("./controllers/user/treeController");
+
+    // User withdraw
 const { requestWithdraw, getWalletBalance, getWithdrawHistory } = require("./controllers/user/withdrawController");
+
+    // User profile
 const {getProfile, getOwnProfile, getDashboardProfile, updateProfile, updatePassword} = require("./controllers/user/profileController");
+
+    // User rewards
+const {getMyRewards} = require("./controllers/user/rewardsController.js");
+
+// 🟡 Auth Routes Controller----------------------------------------------------------------
+
 const verifyEmail = require("./controllers/auth/verifyEmail");
 const resendVerificationEmail = require("./controllers/auth/resendVerification");
 
-    // Rewards Controller
-const {getMyRewards} = require("./controllers/user/rewardsController.js");
-
 // 🟡 Admin Routes Controller---------------------------------------------------------------
+
+    // Admin login
 const adminlogin = require("./controllers/admin/adminLoginController");
+
+    // Admin registration
 const adminreg = require("./controllers/admin/adminRegController");
 
+    // Admin dashboard
 const { 
     getAdminSummary, 
     getWithdrawTrend, 
     getLatestWithdraws,
 } = require("./controllers/admin/dashboardController");
 
+    // Admin user management
 const { 
     getPendingUsers, 
     getApprovedUsers, 
@@ -44,6 +67,7 @@ const {
     rejectUser, 
 } = require("./controllers/admin/userManagementController");
 
+    // Admin Withdraw management
 const { 
     getPendingWithdrawal, 
     getApprovedWithdrawal, 
@@ -52,6 +76,16 @@ const {
     rejectWithdraw, 
 } = require("./controllers/admin/withdrawManagementController");
 
+    // Admin bonus
+const {
+    listPendingBonuses,
+    listAllBonuses,
+    approveBonus,
+    rejectBonus,
+    markPaid,
+} = require("./controllers/admin/adminBonusController.js");
+
+    // Admin Bonus plan 
 const {
   createBonusPlan,
   getAllBonusPlans,
@@ -59,10 +93,20 @@ const {
   deleteBonusPlan,
 } = require("./controllers/admin/bonusPlanController");
 
-const {transaction, transDetaiols} = require("./controllers/admin/transactionManagementController");
+    // Admin transction management
+const {
+    transaction, 
+    transDetaiols
+} = require("./controllers/admin/transactionManagementController");
+
+    // Admin downline tree
 const { getuserTree } = require("./controllers/admin/downlinetreeController.js");
 
+    
+
 // ✅ Vendor Routes Controller-------------------------------------------------------------------
+
+    // Vendor request
 const {
     createVendorRequest,
     getAllVendorRequests,
@@ -72,8 +116,14 @@ const {
     updateVendorRequestStatus,
     getMyVendorRequest,
 } = require("./controllers/vendor/vendorController");
+
+    // Vendor product
 const {createProduct} = require("./controllers/vendor/productController");
+
+    // Vendor category
 const { createCategory, getCategories } = require("./controllers/vendor/categoryController");
+
+    // Vendor brand
 const { createBrand, getBrands } = require("./controllers/vendor/brandController");
 
 
@@ -102,6 +152,8 @@ app.get("/userdownlinetree", checklogin, getDownlineTree);
 app.get("/walletbalance", checklogin, getWalletBalance);
 app.post("/requestwithdraw", checklogin, requestWithdraw);
 app.get("/withdrawhistory", checklogin, getWithdrawHistory);
+   
+    // User profile controller
 app.get("/getprofile", checklogin, getProfile);
 app.get("/getownprofile/:id", checklogin, getOwnProfile);
 app.get("/getdashboardprofile", checklogin, getDashboardProfile);
@@ -140,6 +192,13 @@ app.get("/approvedwithdrawal", checkadmin, getApprovedWithdrawal);
 app.get("/rejectedwithdrawal", checkadmin, getRejectedWithdrawal);
 app.patch("/approvewithdraw/:id", checkadmin, approveWithdraw);
 app.patch("/rejectwithdraw/:id", checkadmin, rejectWithdraw);
+
+    // Admin Bonus Controller
+app.get("/listpendingbonuses", checkadmin, listPendingBonuses);
+app.get("/listallbonuses", checkadmin, listAllBonuses);
+app.patch("/approvebonus/:id", checkadmin, approveBonus);
+app.patch("/rejectbonus/:id", checkadmin, rejectBonus);
+app.patch("/markpaid/:id", checkadmin, markPaid);
 
     // Bonus Plan Controller
 app.post("/createbonusplan", checkadmin, createBonusPlan);

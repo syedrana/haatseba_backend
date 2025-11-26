@@ -1,4 +1,4 @@
-const VendorRequest = require("../../models/vendorRequestModel");
+const VendorRequest = require("../../models/vendor/vendorRequestModel");
 const User = require("../../models/userModel");
 const uploadToCloudinary = require("../../helpers/uploadToCloudinaryHelper");
 

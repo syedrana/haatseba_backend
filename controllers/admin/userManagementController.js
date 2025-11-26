@@ -43,8 +43,9 @@ const getPendingUsers = async (req, res) => {
 
     const [users, count] = await Promise.all([
       User.find(query)
-        .select("firstName lastName email phone image address isEmailVerified createdAt parentId")
+        .select("firstName lastName email phone image address isEmailVerified depositTransactionId createdAt parentId")
         .populate("parentId", "firstName lastName email phone image placementPosition")
+        .sort({ createdAt: -1 })
         .skip(skip)
         .limit(parseInt(limit)),
       User.countDocuments(query),
@@ -74,8 +75,9 @@ const getApprovedUsers = async (req, res) => {
 
     const [users, count] = await Promise.all([
       User.find(query)
-        .select("firstName lastName email phone image address isEmailVerified createdAt parentId")
+        .select("firstName lastName email phone image address isEmailVerified depositTransactionId createdAt parentId")
         .populate("parentId", "firstName lastName email phone image placementPosition")
+        .sort({ createdAt: -1 })
         .skip(skip)
         .limit(parseInt(limit)),
       User.countDocuments(query),
@@ -105,8 +107,9 @@ const getRejectedUsers = async (req, res) => {
 
     const [users, count] = await Promise.all([
       User.find(query)
-        .select("firstName lastName email phone image address isEmailVerified createdAt parentId")
+        .select("firstName lastName email phone image address isEmailVerified depositTransactionId createdAt parentId")
         .populate("parentId", "firstName lastName email phone image placementPosition")
+        .sort({ createdAt: -1 })
         .skip(skip)
         .limit(parseInt(limit)),
       User.countDocuments(query),

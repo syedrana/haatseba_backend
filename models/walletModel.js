@@ -16,6 +16,11 @@ const walletSchema = new mongoose.Schema({
     {
       item: { type: String, required: true }, // Gift / Product
       date: { type: Date, default: Date.now },
+      bonusRef:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Bonus",
+        required: true,
+      }
     }
   ],
 }, { timestamps: true });
