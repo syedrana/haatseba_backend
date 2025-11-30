@@ -1,4 +1,6 @@
 const Bonus = require("../../models/bonusModel");
+const RewardClaim = require("../../models/rewardclaimModel");
+const mongoose = require("mongoose");
 
 // -------------- User APIs ----------------
 
@@ -18,130 +20,183 @@ const getMyRewards = async (req, res) => {
 body: { bonusId, shippingName, shippingPhone, shippingAddress }
 */
 const claimReward = async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
     const userId = req.userid;
     const { bonusId, shippingName, shippingPhone, shippingAddress } = req.body;
 
-    const bonus = await Bonus.findById(bonusId);
-    if (!bonus) return res.status(404).json({ message: "Bonus not found" });
-    if (String(bonus.userId) !== String(userId)) return res.status(403).json({ message: "Not your bonus" });
-    if (bonus.rewardType !== "product") return res.status(400).json({ message: "Only product bonuses require a claim" });
-    if (bonus.status !== "approved") return res.status(400).json({ message: "Bonus not available for claim" });
+    if (!shippingName || !shippingPhone || !shippingAddress) {
+      await session.abortTransaction();
+      return res.status(400).json({ message: "All shipping fields are required" });
+    }
 
-    // Prevent duplicate claims
-    const existing = await RewardClaim.findOne({ bonusId, userId, status: { $ne: "cancelled" } });
-    if (existing) return res.status(400).json({ message: "You already claimed this reward" });
+    // Fetch bonus inside transaction
+    const bonus = await Bonus.findById(bonusId).session(session);
+    if (!bonus) {
+      await session.abortTransaction();
+      return res.status(404).json({ message: "Bonus not found" });
+    }
 
-    const claim = await RewardClaim.create({
+    if (String(bonus.userId) !== String(userId)) {
+      await session.abortTransaction();
+      return res.status(403).json({ message: "Not your bonus" });
+    }
+
+    if (bonus.rewardType !== "product") {
+      await session.abortTransaction();
+      return res.status(400).json({ message: "Only product bonuses require a claim" });
+    }
+
+    if (bonus.status !== "approved") {
+      await session.abortTransaction();
+      return res.status(400).json({ message: "Bonus not available for claim" });
+    }
+
+    // Prevent duplicate claim
+    const existing = await RewardClaim.findOne({
       bonusId,
       userId,
-      shippingName,
-      shippingPhone,
-      shippingAddress,
-    });
+      status: { $ne: "cancelled" }
+    }).session(session);
 
-    // optionally mark bonus as 'processing' to prevent re-claims
+    if (existing) {
+      await session.abortTransaction();
+      return res.status(400).json({ message: "You already claimed this reward" });
+    }
+
+    // Create claim inside transaction
+    const claim = await RewardClaim.create(
+      [
+        {
+          bonusId,
+          userId,
+          shippingName,
+          shippingPhone,
+          shippingAddress
+        }
+      ],
+      { session }
+    );
+
+    // Update bonus status inside transaction
     bonus.status = "processing";
-    await bonus.save();
+    await bonus.save({ session });
 
-    return res.status(201).json({ message: "Claim submitted", claim });
+    // Everything successful → commit transaction
+    await session.commitTransaction();
+    session.endSession();
+
+    return res.status(201).json({ message: "Claim submitted", claim: claim[0] });
+
   } catch (err) {
-    console.error(err);
+    console.error("Claim Reward Error:", err);
+
+    await session.abortTransaction();
+    session.endSession();
+
+    if (err.name === "ValidationError") {
+      return res.status(400).json({
+        message: "Validation failed",
+        errors: err.errors,
+      });
+    }
+
     return res.status(500).json({ message: "Claim failed" });
   }
 };
 
-// GET /rewards/claim/:id  -> view a single claim
-const getMyClaim = async (req, res) => {
+const getMyClaims = async (req, res) => {
   try {
-    const claim = await RewardClaim.findById(req.params.id).populate("bonusId");
-    if (!claim) return res.status(404).json({ message: "Claim not found" });
-    if (String(claim.userId) !== String(req.userid)) return res.status(403).json({ message: "Not authorized" });
-    return res.json(claim);
+    const userId = req.userid;
+    const { page = 1, limit = 20 } = req.query;
+    const skip = (page - 1) * limit;
+
+    const claims = await RewardClaim.find({ userId })
+      .populate("bonusId", "level bonusAmount rewardType")
+      .sort({ createdAt: -1 })
+      .skip(Number(skip))
+      .limit(Number(limit));
+
+    const total = await RewardClaim.countDocuments({ userId });
+
+    return res.status(200).json({ success: true, claims, total });
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ message: "Failed" });
+    console.error("getMyClaims error:", err);
+    return res.status(500).json({ message: "Failed to fetch claims" });
   }
 };
 
-
-// ---------------- Admin APIs ------------------
-
-// GET /admin/rewards/claims  -> list all claims (with filter)
-const adminListClaims = async (req, res) => {
+// GET /myclaims/:id -> single claim for user
+const getMyClaimById = async (req, res) => {
   try {
-    const { status } = req.query;
-    const filter = {};
-    if (status) filter.status = status;
-    const claims = await RewardClaim.find(filter).populate("userId", "firstName lastName phone email").populate("bonusId").sort({ createdAt: -1 });
-    return res.json(claims);
+    const userId = req.userid;
+    const { id } = req.params;
+
+    const claim = await RewardClaim.findById(id)
+      .populate("bonusId", "level bonusAmount rewardType")
+      .populate("userId", "firstName lastName email phone image");
+
+    if (!claim) return res.status(404).json({ message: "Claim not found" });
+    if (String(claim.userId._id) !== String(userId)) return res.status(403).json({ message: "Not your claim" });
+
+    return res.status(200).json({ success: true, data: claim });
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ message: "Failed to load claims" });
+    console.error("getMyClaimById error:", err);
+    return res.status(500).json({ message: "Failed to fetch claim" });
   }
 };
 
-// PATCH /admin/rewards/claim/:id  -> update claim status (processing/shipped/delivered/rejected/cancelled)
-const adminUpdateClaim = async (req, res) => {
+// PUT /myclaims/cancel/:id -> user cancels own claim (only if allowed)
+const cancelMyClaim = async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
   try {
-    const id = req.params.id;
-    const { status, trackingNumber, courier, adminNote } = req.body;
-    const claim = await RewardClaim.findById(id);
-    if (!claim) return res.status(404).json({ message: "Claim not found" });
+    const userId = req.userid;
+    const { id } = req.params;
+    const { adminNote } = req.body;
 
-    // Update fields
-    if (status) claim.status = status;
-    if (trackingNumber) claim.trackingNumber = trackingNumber;
-    if (courier) claim.courier = courier;
-    if (adminNote) claim.adminNote = adminNote;
-
-    // set processing/delivered timestamps
-    if (status === "processing") claim.processedAt = new Date();
-    if (status === "delivered") {
-      claim.deliveredAt = new Date();
-      // also mark underlying bonus delivered
-      const bonus = await Bonus.findById(claim.bonusId);
-      if (bonus) {
-        bonus.status = "delivered";
-        await bonus.save();
-        // optionally decrement product stock
-        if (bonus.productId) {
-          await Product.findByIdAndUpdate(bonus.productId, { $inc: { stock: -1 } });
-        }
-      }
+    const claim = await RewardClaim.findById(id).session(session);
+    if (!claim) {
+      await session.abortTransaction();
+      return res.status(404).json({ message: "Claim not found" });
+    }
+    if (String(claim.userId) !== String(userId)) {
+      await session.abortTransaction();
+      return res.status(403).json({ message: "Not your claim" });
     }
 
-    await claim.save();
-    return res.json({ message: "Claim updated", claim });
+    // Only allow cancel in these statuses (business rule)
+    if (!["pending", "processing"].includes(claim.status)) {
+      await session.abortTransaction();
+      return res.status(400).json({ message: "Cannot cancel at this stage" });
+    }
+
+    // set claim cancelled
+    claim.status = "cancelled";
+    claim.adminNote = adminNote || `${userId} cancelled`;
+    await claim.save({ session });
+
+    // revert bonus status to approved (if bonus exists)
+    const bonus = await Bonus.findById(claim.bonusId).session(session);
+    if (bonus) {
+      bonus.status = "approved";
+      await bonus.save({ session });
+    }
+
+    await session.commitTransaction();
+    session.endSession();
+
+    return res.status(200).json({ success: true, message: "Claim cancelled", claim });
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ message: "Update failed" });
+    console.error("cancelMyClaim error:", err);
+    await session.abortTransaction();
+    session.endSession();
+    return res.status(500).json({ message: "Failed to cancel claim" });
   }
 };
 
-// Admin endpoint to issue a bonus manually (or call issueBonus from other code)
-const adminIssueBonus = async (req, res) => {
-  try {
-    const { userId, level, rewardType, bonusAmount, productId } = req.body;
-    const adminId = req.userid; // must be admin
-    const bonus = await issueBonus({ userId, level, rewardType, bonusAmount, productId, issuedBy: adminId });
-    return res.status(201).json({ message: "Bonus issued", bonus });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ message: err.message || "Issue failed" });
-  }
-};
-
-// Admin: list all bonuses (optional)
-const adminListBonuses = async (req, res) => {
-  try {
-    const bonuses = await Bonus.find().populate("userId", "firstName lastName email").populate("productId", "name").sort({ createdAt: -1 });
-    return res.json(bonuses);
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ message: "Failed to fetch bonuses" });
-  }
-};
 
 
-module.exports = { getMyRewards };
+module.exports = { getMyRewards, claimReward, getMyClaims, getMyClaimById, cancelMyClaim, };

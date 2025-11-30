@@ -24,7 +24,7 @@ const bonusSchema = new mongoose.Schema({
     },
     rewardType: {  
       type: String,
-      enum: ["cash", "product", "other"],
+      enum: ["cash", "product", "mobile_recharge", "high_value", "real_estate", "none"],
       default: "cash",
     },
     costValue: {
@@ -39,11 +39,45 @@ const bonusSchema = new mongoose.Schema({
     status: {
       type: String,
       enum: {
-        values: ["pending", "approved", "paid"],
+        values: [
+          "pending", 
+          "approved", 
+          "paid",
+          "processing",
+          "shipped",
+          "delivered",
+          "cancelled",
+          "not_applicable",
+          "handover_ready", // high-value ready to receive
+          "handover_done",  // motorbike/car delivered
+          "documents_ready",
+          "documents_done",
+          "completed"
+        ],
         message: "Status must be pending, approved, or paid",
       },
       default: "pending",
       lowercase: true,
+      trim: true,
+    },
+    rechargeNumber: {
+      type: String,
+      default: null,
+    },
+
+    rechargedAt: {
+      type: Date,
+      default: null,
+    },
+
+    transactionId: {
+      type: String,
+      default: null,
+      trim: true,
+    },
+    adminNote: {
+      type: String,
+      maxlength: [255, "Note cannot exceed 255 characters"],
       trim: true,
     },
     note: {

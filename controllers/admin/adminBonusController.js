@@ -42,6 +42,32 @@ const listAllBonuses = async (req, res) => {
   }
 };
 
+const listApprovedBonuses = async (req, res) => {
+  try {
+    const { page = 1, limit = 20 } = req.query;
+
+    const skip = (page - 1) * limit;
+
+    const bonuses = await Bonus.find({ status: "approved" })
+      .populate("userId", "firstName lastName email phone")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(Number(limit));
+
+    const total = await Bonus.countDocuments({ status: "approved" });
+
+    return res.json({
+      bonuses,
+      total,
+      page: Number(page),
+      totalPages: Math.ceil(total / limit),
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ message: "Failed to load approved bonuses" });
+  }
+};
+
 // PATCH /admin/bonus/approve/:id
 // Approve a pending bonus
 const approveBonus = async (req, res) => {
@@ -159,18 +185,18 @@ const markPaid = async (req, res) => {
 
       const nonCashItem = bonus.bonusAmount;
 
-      await Wallet.findOneAndUpdate(
-        { userId: bonus.userId },
-        { $push: { rewards: { item: `Reward: ${nonCashItem}`, date: new Date(), bonusRef: bonus._id } } },
-        { upsert: true, new: false, session } // upsert:true to create wallet if not exists
-      );
+      // await Wallet.findOneAndUpdate(
+      //   { userId: bonus.userId },
+      //   { $push: { rewards: { item: `Reward: ${nonCashItem}`, date: new Date(), bonusRef: bonus._id } } },
+      //   { upsert: true, new: false, session } // upsert:true to create wallet if not exists
+      // );
       
       // Mark paid — (you might prefer to wait until delivered; here paid means reserved & stock decremented)
-      bonus.status = "paid";
+      bonus.status = "completed";
       await bonus.save({ session });
-    } else {
+    } else if (bonus.rewardType === "none") {
       // other types (mobile etc.) — you can treat as paid once manual processing done
-      bonus.status = "paid";
+      bonus.status = "not_applicable";
       await bonus.save({ session });
     }
 
@@ -185,10 +211,50 @@ const markPaid = async (req, res) => {
   }
 };
 
+const approveMobileRecharge = async (req, res) => {
+  try {
+    const bonusId = req.params.id;
+
+    const bonus = await Bonus.findById(bonusId).populate("userId");
+    if (!bonus)
+      return res.status(404).json({ message: "Bonus not found" });
+
+    // Must be mobile recharge
+    if (bonus.rewardType !== "mobile_recharge")
+      return res.status(400).json({ message: "Not a mobile recharge bonus" });
+
+    // Already done
+    if (bonus.status === "paid")
+      return res.status(400).json({ message: "Recharge already completed" });
+
+    // Set recharge done
+    bonus.status = "paid";
+    bonus.rechargeNumber = bonus.userId.phone;  // Auto bind user phone
+    bonus.rechargedAt = new Date();
+
+    if (req.body.transactionId) bonus.transactionId = req.body.transactionId;
+    if (req.body.adminNote) bonus.adminNote = req.body.adminNote;
+
+    await bonus.save();
+
+    res.json({
+      success: true,
+      message: "Mobile Recharge Completed Successfully",
+      bonus
+    });
+
+  } catch (error) {
+    console.log("Recharge Error:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
 module.exports = {
   listPendingBonuses,
   listAllBonuses,
+  listApprovedBonuses,
   approveBonus,
   rejectBonus,
   markPaid,
+  approveMobileRecharge,
 };

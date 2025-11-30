@@ -36,7 +36,13 @@ const { requestWithdraw, getWalletBalance, getWithdrawHistory } = require("./con
 const {getProfile, getOwnProfile, getDashboardProfile, updateProfile, updatePassword} = require("./controllers/user/profileController");
 
     // User rewards
-const {getMyRewards} = require("./controllers/user/rewardsController.js");
+const {
+    getMyRewards,
+    claimReward,
+    getMyClaims,
+    getMyClaimById,
+    cancelMyClaim,
+} = require("./controllers/user/rewardsController.js");
 
 // 🟡 Auth Routes Controller----------------------------------------------------------------
 
@@ -80,9 +86,11 @@ const {
 const {
     listPendingBonuses,
     listAllBonuses,
+    listApprovedBonuses,
     approveBonus,
     rejectBonus,
     markPaid,
+    approveMobileRecharge,
 } = require("./controllers/admin/adminBonusController.js");
 
     // Admin Bonus plan 
@@ -101,6 +109,17 @@ const {
 
     // Admin downline tree
 const { getuserTree } = require("./controllers/admin/downlinetreeController.js");
+
+    // Admin claim
+const {
+    getAllClaims,
+    getSingleClaim,
+    approveClaim,
+    rejectClaim,
+    markShipped,
+    markDelivered,
+    cancelClaim,
+} = require("./controllers/admin/adminClaimController.js");
 
     
 
@@ -161,6 +180,10 @@ app.put("/updateprofile", checklogin, updateProfile);
 
     // Rewards Controller
 app.get("/getMyRewards", checklogin, getMyRewards);
+app.post("/claimreward", checklogin, claimReward);
+app.get("/myclaims", checklogin, getMyClaims);
+app.get("/myclaims/:id", checklogin, getMyClaimById);
+app.put("/myclaimscancel/:id", checklogin, cancelMyClaim);
 
     // Verify Email Controller
 app.get("/verify-email", verifyEmail);
@@ -196,9 +219,11 @@ app.patch("/rejectwithdraw/:id", checkadmin, rejectWithdraw);
     // Admin Bonus Controller
 app.get("/listpendingbonuses", checkadmin, listPendingBonuses);
 app.get("/listallbonuses", checkadmin, listAllBonuses);
+app.get("/listapprovedbonuses", checkadmin, listApprovedBonuses);
 app.patch("/approvebonus/:id", checkadmin, approveBonus);
 app.patch("/rejectbonus/:id", checkadmin, rejectBonus);
 app.patch("/markpaid/:id", checkadmin, markPaid);
+app.patch("/approvemobilerecharge/:id", checkadmin, approveMobileRecharge);
 
     // Bonus Plan Controller
 app.post("/createbonusplan", checkadmin, createBonusPlan);
@@ -212,6 +237,15 @@ app.get("/transactiondetails", checkadmin, transDetaiols);
 
     // Downlinetree Controlller
 app.get("/usertree/:id", checkadmin,  getuserTree);
+
+    // Admin Claim Controller
+app.get("/claims",checkadmin, getAllClaims);
+app.get("/singleclaims/:id",checkadmin, getSingleClaim);
+app.put("/claimsapprove/:id", checkadmin, approveClaim);
+app.put("/claimsreject/:id", checkadmin, rejectClaim);
+app.put("/claimsshipped/:id", checkadmin, markShipped);
+app.put("/claimsdelivered/:id", checkadmin, markDelivered);
+app.put("/claimscancel/:id", checkadmin, cancelClaim);
 
 // ✅ Vendor Route--------------------------------------------------------------------------
     //user
