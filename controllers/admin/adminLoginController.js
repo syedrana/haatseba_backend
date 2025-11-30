@@ -28,7 +28,7 @@ let login = async (req, res) => {
                         userid: exitingUser._id,
                         role: exitingUser.role,
                     }, process.env.JWT_SECRET,{
-                        expiresIn: "1h"
+                        expiresIn: "23h"
                     });
 
                     res.status(200).json({
