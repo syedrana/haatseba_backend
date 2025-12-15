@@ -37,7 +37,7 @@ const getDashboardProfile = async (req, res) => {
     const userId = req?.userid;
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
-    const user = await User.findById(userId).select(" firstName lastName email image role");
+    const user = await User.findById(userId).select(" firstName lastName email image role isAgent isVendor");
     if (!user) return res.status(404).json({ message: "User not found" });
 
     res.json(user);

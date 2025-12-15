@@ -16,6 +16,7 @@ const dbConnection = require("./helpers/dbConnection");
     
     // User registration
 const registration = require("./controllers/user/registrationController");
+const {registerProduct} = require("./controllers/user/registerproductController.js");
 
     // User verification
 const verification = require("./controllers/user/verificationController");
@@ -43,6 +44,20 @@ const {
     getMyClaimById,
     cancelMyClaim,
 } = require("./controllers/user/rewardsController.js");
+
+    // User change password
+const changePassword = require("./controllers/user/changePassword");
+
+    // User Edit Profile
+const {
+    getMe,
+    requestProfileUpdate,
+    getPendingProfileUpdates,
+    approveProfileUpdate,
+    rejectProfileUpdate,
+} = require("./controllers/user/editProfileController");
+
+const {getmarketplaceProducts} = require("./controllers/user/marketplaceController");
 
 // 🟡 Auth Routes Controller----------------------------------------------------------------
 
@@ -137,13 +152,41 @@ const {
 } = require("./controllers/vendor/vendorController");
 
     // Vendor product
-const {createProduct} = require("./controllers/vendor/productController");
+const {
+    createProduct,
+    getVendorProducts, 
+    updateProduct, 
+    deleteProduct 
+} = require("./controllers/vendor/productController");
 
     // Vendor category
 const { createCategory, getCategories } = require("./controllers/vendor/categoryController");
 
     // Vendor brand
 const { createBrand, getBrands } = require("./controllers/vendor/brandController");
+
+// ✅ Agent Routes Controller-------------------------------------------------------------------
+
+const { 
+    loadAgentPackages, 
+    createPackage, 
+    searchProduct,
+    getAllPackages,
+    getPackageById,
+    updatePackage,
+    deletePackage, 
+} = require("./controllers/agent/packageController");
+
+const {
+    placeAgentOrder,
+    listAgentOrders,
+    getAgentOrder,
+    approveAgentOrder,
+    rejectAgentOrder,
+} = require("./controllers/agent/agentOrderController");
+
+const { getMyAgentStock } = require("./controllers/agent/agentStockController");
+const {registerUser, getSingleProduct} = require("./controllers/agent/productRegController");
 
 
 const app =express();
@@ -164,6 +207,7 @@ app.use("/uploads", express.static("uploads"));
 // ✅ User Routes------------------------------------------------------------------------------
 
 app.post("/registration", multerErrorHandler(upload.single("image")), securapi, registration);
+app.get("/registerproduct", securapi, registerProduct);
 app.get("/verification", securapi, verification);
 app.post("/login", securapi, login);
 app.get("/userdashboard", checklogin, getUserDashboard);
@@ -171,12 +215,22 @@ app.get("/userdownlinetree", checklogin, getDownlineTree);
 app.get("/walletbalance", checklogin, getWalletBalance);
 app.post("/requestwithdraw", checklogin, requestWithdraw);
 app.get("/withdrawhistory", checklogin, getWithdrawHistory);
-   
+app.post("/change-password", checklogin, changePassword);
+
     // User profile controller
 app.get("/getprofile", checklogin, getProfile);
 app.get("/getownprofile/:id", checklogin, getOwnProfile);
 app.get("/getdashboardprofile", checklogin, getDashboardProfile);
 app.put("/updateprofile", checklogin, updateProfile);
+
+    // Edit Profile Controller
+app.get("/getme", checklogin, getMe);
+app.put("/requestprofileupdate", checklogin, multerErrorHandler(upload.single("image")), requestProfileUpdate);
+app.get("/getpendingprofileupdates", checkadmin, getPendingProfileUpdates);
+app.put("/approveprofileupdate/:id", checkadmin, approveProfileUpdate);
+app.put("/rejectProfileUpdate/:id", checkadmin, rejectProfileUpdate);
+
+app.get("/getmarketplaceproducts", checklogin, getmarketplaceProducts);
 
     // Rewards Controller
 app.get("/getMyRewards", checklogin, getMyRewards);
@@ -252,10 +306,16 @@ app.put("/claimscancel/:id", checkadmin, cancelClaim);
 app.post("/vendorrequest", checklogin, multerErrorHandler(upload.array("documents", 6)), createVendorRequest);
 app.get("/myrequest", checklogin, getMyVendorRequest);
 app.post("/vendoraddproduct", checklogin, multerErrorHandler(upload.single("image")), createProduct);
-app.post("/createcategory", checklogin, createCategory);
+
 app.get("/allcategories", checklogin, getCategories);
-app.post("/createbrand", checklogin, createBrand);
 app.get("/allbrands", checklogin, getBrands);
+
+app.get("/vendorproducts", checklogin, getVendorProducts);
+app.put("/vendorproductupdate/:id", checklogin, multerErrorHandler(upload.single("image")), updateProduct);
+app.delete("/vendorproductdelete/:id", checklogin, deleteProduct);
+
+
+
 
     //Admin
 app.get("/vendor/requests", checkadmin, getAllVendorRequests);
@@ -264,6 +324,35 @@ app.put("/approvevendorrequest/:id", checkadmin, approveVendorRequest);
 app.put("/rejectvendorrequest/:id", checkadmin, rejectVendorRequest);
 app.patch("/vendor/request/:id", checkadmin, updateVendorRequestStatus);
 
+app.post("/createcategory", checkadmin, createCategory);
+app.get("/allcategories/search", checkadmin, getCategories);
+app.post("/createbrand", checkadmin, createBrand);
+
+// ✅ Agent Route--------------------------------------------------------------------------
+   
+    //Admin
+app.post("/createpackage", checkadmin, createPackage);
+app.get("/searchproduct", checkadmin, searchProduct);
+app.get("/getallpackages", checkadmin, getAllPackages);
+app.get("/getpackagebyid/:id", checkadmin, getPackageById);
+app.put("/updatepackage/:id", checkadmin, updatePackage);
+app.delete("/deletepackage/:id", checkadmin, deletePackage);
+
+    // Admin Agent Onder Controller
+app.get("/agentorders", checkadmin, listAgentOrders);
+app.get("/getagentorder/:id", checkadmin, getAgentOrder);
+app.post("/approveagentorder/:id", checkadmin, approveAgentOrder);
+app.post("/rejectagentorder/:id", checkadmin, rejectAgentOrder);
+
+    //user
+app.get("/loadagentpackages", checklogin, loadAgentPackages);
+app.post("/placeagentorder", checklogin, placeAgentOrder);
+
+    // User Agent Stock Controller
+app.get("/getmyagentstock", checklogin, getMyAgentStock);
+    //User Agent Product Reg Controller
+app.post("/registeruser", multerErrorHandler(upload.single("image")), checklogin, registerUser);
+app.get("/singleproduct/:id", checklogin, getSingleProduct);
 
 // ✅ Root Route (for Render test)----------------------------------------------------------
 app.get("/", (req, res) => {

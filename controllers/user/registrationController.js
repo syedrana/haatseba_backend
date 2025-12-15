@@ -233,6 +233,7 @@
 
 
 const User = require("../../models/userModel");
+const Product = require("../../models/vendor/vendorproductModel");
 const uploadToCloudinary = require("../../helpers/uploadToCloudinaryHelper");
 const generateUniqueReferralCode = require("../../utils/generateReferralCode");    
 
@@ -259,7 +260,6 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ message: "Invalid nominee data format." });
     }
 
-
     // 🔐 Validation
     if (!firstName?.trim() || !lastName?.trim()) {
       return res.status(400).json({ message: "First and last name are required." });
@@ -267,10 +267,6 @@ const registerUser = async (req, res) => {
 
     if (!email?.trim() || !/^\S+@\S+\.\S+$/.test(email)) {
       return res.status(400).json({ message: "Valid email is required." });
-    }
-
-    if (!depositTransactionId?.trim()) {
-      return res.status(400).json({ message: "deposit transaction id are required." });
     }
 
     if (!phone?.trim() || !/^\d{10,15}$/.test(phone)) {
@@ -317,8 +313,19 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ message: "Placement Position are required." });
     }
 
+     // =====================================================
+    //   🔥 PRODUCT OR DEPOSIT VALIDATION
+    // =====================================================
 
-    const emailExist = await User.findOne({ email });
+    if (!depositTransactionId?.trim()) {
+        return res.status(400).json({ message: "Deposit transaction ID is required for deposit registration." });
+      }
+
+    // =====================================================
+    // 🔥 (Your existing email, referral, slot validations stay SAME)
+    // =====================================================
+
+    const emailExist = await User.findOne({ email: email.trim().toLowerCase() });
 
     if (emailExist) {
       if (emailExist.isApproved === false) {
@@ -423,6 +430,15 @@ const registerUser = async (req, res) => {
   }
 };
 
+const registerProduct = async (req, res) => {
+  try {
+    const products = await Product.find({ status: "active" })
+      .select("_id name price costPrice");
 
+    res.json({ success: true, products });
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
 
 module.exports = registerUser;

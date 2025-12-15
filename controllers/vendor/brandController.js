@@ -20,7 +20,13 @@ const createBrand = async (req, res) => {
 // 🟢 Get All Active Brands
 const getBrands = async (req, res) => {
   try {
-    const brands = await Brand.find({ status: "active" }).sort({ name: 1 });
+    const q = req.query.q || "";
+    const brands = await Brand.find({ 
+      name: { $regex: q, $options: "i" },
+      status: "active" 
+    })
+    .limit(20)
+    .sort({ name: 1 });
     res.json({ success: true, brands });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });

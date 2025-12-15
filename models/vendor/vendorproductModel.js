@@ -133,15 +133,19 @@ const productSchema = new mongoose.Schema(
 );
 
 // 🔧 Pre-save hook (slug auto generate + updatedAt refresh)
-productSchema.pre("save", function (next) {
-  this.updatedAt = Date.now();
+productSchema.pre("save", async function (next) {
   if (!this.slug && this.name) {
-    this.slug = this.name
-      .toLowerCase()
-      .replace(/\s+/g, "-")
-      .replace(/[^\w-]+/g, "");
+    let baseSlug = this.name.toLowerCase().replace(/\s+/g, "-").replace(/[^\w-]/g, "");
+    let slug = baseSlug;
+    let count = 1;
+
+    while (await mongoose.models.Product.findOne({ slug })) {
+      slug = `${baseSlug}-${count++}`;
+    }
+    this.slug = slug;
   }
   next();
 });
+
 
 module.exports = mongoose.model("Product", productSchema);

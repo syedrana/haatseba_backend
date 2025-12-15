@@ -2,6 +2,7 @@ const Product = require("../../models/vendor/vendorproductModel");
 const Vendor = require("../../models/vendor/vendorRequestModel");
 const User = require("../../models/userModel");
 const uploadToCloudinary = require("../../helpers/uploadToCloudinaryHelper");
+const cloudinary = require("../../config/cloudinary");
 
 // 🟢 Create Product
 const createProduct = async (req, res) => {
@@ -45,11 +46,20 @@ const createProduct = async (req, res) => {
     if (price == null || price < 0) {
       return res.status(400).json({ success: false, message: "Product price must be a positive number" });
     }
-    if (costPrice == null || price < 0) {
+    if (costPrice == null || costPrice < 0) {
       return res.status(400).json({ success: false, message: "Product cost price must be a positive number" });
+    }
+    if (costPrice > price) {
+      return res.status(400).json({ message: "Cost price cannot exceed selling price" });
     }
     if (discount < 0 || discount > 100) {
       return res.status(400).json({ success: false, message: "Discount must be between 0 and 100" });
+    }
+    if (!category) {
+      return res.status(400).json({ message: "Category is required" });
+    } 
+    if (!brand) {
+      return res.status(400).json({ message: "Brand is required" });
     }
     if (stock == null || stock < 0) {
       return res.status(400).json({ success: false, message: "Stock cannot be negative" });
@@ -129,18 +139,55 @@ const getProductById = async (req, res) => {
   }
 };
 
+// GET /vendor/products
+const getVendorProducts = async (req, res) => {
+  try {
+    const products = await Product.find({
+      vendorId: req.userid,
+      status: { $ne: "deleted" },
+    })
+      .populate("category", "name")
+      .populate("brand", "name")
+      .sort({ createdAt: -1 });
+
+    res.json({ success: true, products });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+
 // 🟢 Update Product
 const updateProduct = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id);
+    const { id } = req.params;
+    const product = await Product.findById(id);
     if (!product) return res.status(404).json({ success: false, message: "Product not found" });
 
     // ভেন্ডর বা অ্যাডমিন অনুমতি
-    if (req.user._id.toString() !== product.vendorId.toString() && !req.user.isAdmin) {
+    if (req.userid.toString() !== product.vendorId.toString() && !req.user.isAdmin) {
       return res.status(403).json({ success: false, message: "Unauthorized" });
     }
 
-    Object.assign(product, req.body); // request body থেকে update
+    // Multipart/FormData থেকে data handle
+    if (req.body.name) product.name = req.body.name;
+    if (req.body.price) product.price = Number(req.body.price);
+    if (req.body.stock) product.stock = Number(req.body.stock);
+    if (req.body.discount) product.discount = Number(req.body.discount);
+    if (req.body.description) product.description = req.body.description;
+
+    // যদি image আপলোড হয়
+    if (req.file) {
+
+      if (product.imagePublicId) {
+        await cloudinary.uploader.destroy(product.imagePublicId);
+      }
+      // Cloudinary বা যেখান থেকে image handle করো
+      const result = await uploadToCloudinary(req.file.buffer);
+      product.image = result.secure_url;
+      product.imagePublicId = result.public_id;
+    }
+
     await product.save();
 
     res.json({ success: true, product, message: "Product updated successfully" });
@@ -150,26 +197,28 @@ const updateProduct = async (req, res) => {
   }
 };
 
+
 // 🟢 Delete / Inactivate Product
 const deleteProduct = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id);
+    const product = await Product.findById(req.params.id); // ✅ fix
     if (!product) return res.status(404).json({ success: false, message: "Product not found" });
 
-    if (req.user._id.toString() !== product.vendorId.toString() && !req.user.isAdmin) {
+    // ভেন্ডর বা অ্যাডমিন অনুমতি
+    if (req.userid.toString() !== product.vendorId.toString() && !req.user.isAdmin) {
       return res.status(403).json({ success: false, message: "Unauthorized" });
     }
 
-    // Soft delete
-    product.status = "deleted";
-    await product.save();
+    // 🔥 Permanent delete
+    await Product.findByIdAndDelete(req.params.id);
 
-    res.json({ success: true, message: "Product deleted successfully" });
+    res.json({ success: true, message: "Product deleted permanently" });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
 
 // 🟢 Approve / Reject Product (Admin)
 const approveProduct = async (req, res) => {
@@ -191,4 +240,9 @@ const approveProduct = async (req, res) => {
 };
 
 
-module.exports = { createProduct };
+module.exports = { 
+  createProduct, 
+  getVendorProducts, 
+  updateProduct, 
+  deleteProduct 
+};

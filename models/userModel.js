@@ -56,17 +56,25 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    isAgent: {
+      type: Boolean,
+      default: false,
+    },
+    agentSince: {
+      type: Date,
+      default: null
+    },
     isVendor: {
       type: Boolean,
-      default: false, // 🔹 অ্যাডমিন এপ্রুভ না করা পর্যন্ত false
+      default: false,
     },
     vendorAt: {
       type: Date,
-      default: null,
+      default: null
     },
     status: {
       type: String,
-      enum: ["active", "pending", "rejected", "banned"],
+      enum: ["active", "pending", "rejected", "approved", "banned"],
       default: "pending",
     },
     phone: {
@@ -92,6 +100,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, "Image is required"],     
       trim: true,
+    },
+    imagePublicId: {
+      type: String,
+      default: null,
     },
     address: {
       type: String,
@@ -161,6 +173,16 @@ const userSchema = new mongoose.Schema(
         ref: "User",
       },
     ],
+    registrationType: {
+      type: String,
+      enum: ["deposit", "product"], 
+      default: "deposit", 
+    },
+    registrationProductId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Product",
+      default: null,
+    },
     isDepositPaid: {
       type: Boolean,
       default: false,
@@ -171,7 +193,7 @@ const userSchema = new mongoose.Schema(
     },
     depositTransactionId: {
       type: String,
-      required: [true, "Transaction Id is required"],
+      //required: [true, "Transaction Id is required"],
       trim: true,
     },
 
@@ -213,6 +235,41 @@ const userSchema = new mongoose.Schema(
         trim: true,
       },
     },
+    pendingProfileUpdate: {
+      data: {
+        firstName: String,
+        lastName: String,
+        phone: String,
+        address: String,
+        image: String,
+
+        nominee: {
+          firstName: String,
+          lastName: String,
+          relation: String,
+          phone: String,
+          address: String,
+        },
+      },
+      status: {
+        type: String,
+        enum: ["pending", "approved", "rejected"],
+      },
+      requestedAt: {
+        type: Date,
+      },
+      reviewedAt: {
+        type: Date,
+      },
+      reviewedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Admin",
+      },
+      rejectReason: {
+        type: String,
+      },
+    },
+
   },
   { timestamps: true }
 );
