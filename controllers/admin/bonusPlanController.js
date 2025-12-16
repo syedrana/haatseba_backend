@@ -1,4 +1,5 @@
 const BonusPlan = require("../../models/bonusPlanModel");
+const Bonus = require("../../models/bonusModel");
 
 // ✅ Create Bonus Plan
 const createBonusPlan = async (req, res) => {
@@ -22,12 +23,29 @@ const createBonusPlan = async (req, res) => {
 // ✅ Get All Bonus Plans
 const getAllBonusPlans = async (req, res) => {
   try {
+    // 🔐 Auth middleware থেকে user
+    const userId = req.userid;
+
     const plans = await BonusPlan.find().sort({ level: 1 });
-    res.status(200).json(plans);
+
+    const bonusHistory = await Bonus.find({ userId })
+      .sort({ createdAt: -1 })
+      .limit(17)
+      .select("level"); // শুধু level লাগলে
+
+    res.status(200).json({
+      plans,
+      bonusHistory
+    });
+
   } catch (error) {
-    res.status(500).json({ message: "Error fetching bonus plans", error: error.message });
+    res.status(500).json({
+      message: "Error fetching bonus plans",
+      error: error.message
+    });
   }
 };
+
 
 // ✅ Update Bonus Plan
 const updateBonusPlan = async (req, res) => {

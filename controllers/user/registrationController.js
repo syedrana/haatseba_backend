@@ -233,7 +233,6 @@
 
 
 const User = require("../../models/userModel");
-const Product = require("../../models/vendor/vendorproductModel");
 const uploadToCloudinary = require("../../helpers/uploadToCloudinaryHelper");
 const generateUniqueReferralCode = require("../../utils/generateReferralCode");    
 
@@ -249,6 +248,7 @@ const registerUser = async (req, res) => {
       address,
       referralCode,
       placementPosition,
+      registrationType,
       depositTransactionId,
     } = req.body;
 
@@ -313,17 +313,9 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ message: "Placement Position are required." });
     }
 
-     // =====================================================
-    //   🔥 PRODUCT OR DEPOSIT VALIDATION
-    // =====================================================
-
     if (!depositTransactionId?.trim()) {
-        return res.status(400).json({ message: "Deposit transaction ID is required for deposit registration." });
-      }
-
-    // =====================================================
-    // 🔥 (Your existing email, referral, slot validations stay SAME)
-    // =====================================================
+      return res.status(400).json({ message: "Deposit transaction ID is required for deposit registration." });
+    }
 
     const emailExist = await User.findOne({ email: email.trim().toLowerCase() });
 
@@ -403,6 +395,7 @@ const registerUser = async (req, res) => {
       childIndex: parent ? (placementPosition === "line one" ? 0 : placementPosition === "line two" ? 1 : 2) : null,
       isSlotReserved: parent ? true : false,
       reservedAt: parent ? new Date() : null,
+      registrationType: registrationType,
       depositTransactionId: depositTransactionId,
       nominee: {
         firstName: nominee.firstName.trim(),
@@ -427,17 +420,6 @@ const registerUser = async (req, res) => {
       success: false,
       message: "Internal server error during registration.",
     });
-  }
-};
-
-const registerProduct = async (req, res) => {
-  try {
-    const products = await Product.find({ status: "active" })
-      .select("_id name price costPrice");
-
-    res.json({ success: true, products });
-  } catch (error) {
-    res.status(500).json({ message: "Server error" });
   }
 };
 

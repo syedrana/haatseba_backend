@@ -58,6 +58,7 @@ const {
 } = require("./controllers/user/editProfileController");
 
 const {getmarketplaceProducts} = require("./controllers/user/marketplaceController");
+const getreferralCode = require("./controllers/user/myreferralController");
 
 // 🟡 Auth Routes Controller----------------------------------------------------------------
 
@@ -216,6 +217,8 @@ app.get("/walletbalance", checklogin, getWalletBalance);
 app.post("/requestwithdraw", checklogin, requestWithdraw);
 app.get("/withdrawhistory", checklogin, getWithdrawHistory);
 app.post("/change-password", checklogin, changePassword);
+
+app.get("/getreferralCode", checklogin, getreferralCode);
 
     // User profile controller
 app.get("/getprofile", checklogin, getProfile);
