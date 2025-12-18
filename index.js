@@ -233,7 +233,7 @@ app.get("/getpendingprofileupdates", checkadmin, getPendingProfileUpdates);
 app.put("/approveprofileupdate/:id", checkadmin, approveProfileUpdate);
 app.put("/rejectProfileUpdate/:id", checkadmin, rejectProfileUpdate);
 
-app.get("/getmarketplaceproducts", checklogin, getmarketplaceProducts);
+app.get("/getmarketplaceproducts", getmarketplaceProducts);
 
     // Rewards Controller
 app.get("/getMyRewards", checklogin, getMyRewards);

@@ -64,6 +64,7 @@ let login = async (req, res) => {
       role: existingUser.role,
       referralCode: existingUser.referralCode,
       name: `${existingUser.firstName} ${existingUser.lastName}`,
+      image: existingUser.image,
     });
   } catch (error) {
     console.error("Login Error:", error.message);
