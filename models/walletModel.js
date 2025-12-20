@@ -12,17 +12,17 @@ const walletSchema = new mongoose.Schema({
     default: 0, // টাকা
     min: [0, "Balance cannot be negative"],
   },
-  rewards: [
-    {
-      item: { type: String, required: true }, // Gift / Product
-      date: { type: Date, default: Date.now },
-      bonusRef:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Bonus",
-        required: true,
-      }
-    }
-  ],
+  // rewards: [
+  //   {
+  //     item: { type: String, required: true }, // Gift / Product
+  //     date: { type: Date, default: Date.now },
+  //     bonusRef:{
+  //       type: mongoose.Schema.Types.ObjectId,
+  //       ref: "Bonus",
+  //       required: true,
+  //     }
+  //   }
+  // ],
 }, { timestamps: true });
 
 module.exports = mongoose.model("Wallet", walletSchema);

@@ -179,6 +179,7 @@ const {
 } = require("./controllers/agent/packageController");
 
 const {
+    getMyWallet,
     placeAgentOrder,
     listAgentOrders,
     getAgentOrder,
@@ -350,6 +351,7 @@ app.post("/rejectagentorder/:id", checkadmin, rejectAgentOrder);
     //user
 app.get("/loadagentpackages", checklogin, loadAgentPackages);
 app.post("/placeagentorder", checklogin, placeAgentOrder);
+app.get("/getmywallet", checklogin, getMyWallet);
 
     // User Agent Stock Controller
 app.get("/getmyagentstock", checklogin, getMyAgentStock);

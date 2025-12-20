@@ -32,8 +32,8 @@ const agentOrderSchema = new mongoose.Schema(
       type: String,
       required: [true, "Payment type is required"],
       enum: {
-        values: ["cod", "online"],
-        message: "Payment type must be either 'cod' or 'online'",
+        values: ["cod", "wallet"],
+        message: "Payment type must be either 'cod' or 'wallet'",
       },
     },
 

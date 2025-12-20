@@ -4,41 +4,168 @@ const Package = require("../../models/agent/packageModel");
 const User = require("../../models/userModel");
 const mongoose = require("mongoose");
 const Product = require("../../models/vendor/vendorproductModel");
+const Wallet = require("../../models/walletModel");
+const Transaction = require("../../models/transactionModel");
+
+const getMyWallet = async (req, res) => {
+  try {
+    const userId = req.userid; // auth middleware থেকে আসবে
+
+    const wallet = await Wallet.findOne({ userId });
+
+    if (!wallet) {
+      return res.json({
+        success: true,
+        wallet: {
+          cashBalance: 0,
+        },
+      });
+    }
+
+    res.json({
+      success: true,
+      wallet: {
+        cashBalance: wallet.cashBalance,
+      },
+    });
+  } catch (error) {
+    console.error("Get Wallet Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
 
 // ✅ User places agent package order
 const placeAgentOrder = async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
-    const userId = req.userid; // Logged in user
-    const { packageId, quantity, paymentType } = req.body;
+    const userId = req.userid;
+    const { packageId, quantity } = req.body;
 
-    // 1️⃣ Validate package
-    const package = await Package.findById(packageId);
-    if (!package || package.status !== "active") {
-      return res.status(400).json({ success: false, message: "Invalid package" });
+    // 🔒 Wallet only → paymentType fixed
+    const paymentType = "wallet";
+
+    if (!packageId || !quantity) {
+      await session.abortTransaction();
+      return res.status(400).json({
+        success: false,
+        message: "Missing required fields",
+      });
     }
 
-    if (package.stock < quantity) {
-      return res.status(400).json({ success: false, message: "Not enough stock" });
+    // 1️⃣ Fetch package with products
+    const pkg = await Package.findById(packageId)
+      .populate("products.productId")
+      .session(session);
+
+    if (!pkg || pkg.status !== "active") {
+      await session.abortTransaction();
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or inactive package",
+      });
     }
 
-    const amount = package.price * quantity;
+    // 2️⃣ Product-wise stock check
+    for (const item of pkg.products) {
+      const requiredQty = item.quantity * quantity;
+      const availableStock = item.productId?.stock || 0;
 
-    // 2️⃣ Create order
-    const order = await AgentOrder.create({
-      userId,
-      packageId,
-      quantity,
-      paymentType,
-      amount,
-      status: "pending",
+      if (availableStock < requiredQty) {
+        await session.abortTransaction();
+        return res.status(400).json({
+          success: false,
+          message: `Insufficient stock for ${item.productId?.name}`,
+        });
+      }
+    }
+
+    // 3️⃣ Calculate amount
+    const amount = pkg.price * quantity;
+
+    // 4️⃣ Fetch wallet
+    const wallet = await Wallet.findOne({ userId }).session(session);
+
+    if (!wallet) {
+      await session.abortTransaction();
+      return res.status(400).json({
+        success: false,
+        message: "Wallet not found",
+      });
+    }
+
+    if (wallet.cashBalance < amount) {
+      await session.abortTransaction();
+      return res.status(400).json({
+        success: false,
+        message: "Insufficient wallet balance",
+      });
+    }
+
+    // 5️⃣ Deduct wallet balance
+    wallet.cashBalance -= amount;
+    await wallet.save({ session });
+
+    // 6️⃣ Create order
+    const [order] = await AgentOrder.create(
+      [
+        {
+          userId,
+          packageId,
+          quantity,
+          paymentType, // always "online"
+          amount,
+          status: "pending", // admin approve করবে
+        },
+      ],
+      { session }
+    );
+
+    // 7️⃣ Create transaction (ledger)
+    await Transaction.create(
+      [
+        {
+          userId,
+          type: "debit",
+          amount,
+          category: "transfer",
+          relatedModel: "AgentOrder",
+          relatedId: order._id,
+          description: "Agent package purchase",
+          status:"completed",
+          runningBalance: wallet.cashBalance,
+        },
+      ],
+      { session }
+    );
+
+    // ✅ Commit transaction
+    await session.commitTransaction();
+    session.endSession();
+
+    res.json({
+      success: true,
+      message: "Order placed successfully using wallet",
+      order: order[0],
+      walletBalance: wallet.cashBalance,
     });
-
-    res.json({ success: true, message: "Order placed successfully", order });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: "Server error" });
+    await session.abortTransaction();
+    session.endSession();
+
+    console.error("Place Agent Order Error:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Server error",
+    });
   }
 };
+
 
 /**
  * GET /admin/agent-orders
@@ -206,7 +333,7 @@ const approveAgentOrder = async (req, res) => {
 
   try {
     const { id } = req.params;
-    const adminId = req.userid;
+    const adminId = req.userid; 
 
     // 1) Find order
     const order = await AgentOrder.findById(id).session(session);
@@ -367,6 +494,7 @@ const rejectAgentOrder = async (req, res) => {
 
 
 module.exports = { 
+  getMyWallet,
   placeAgentOrder,
   listAgentOrders,
   getAgentOrder,

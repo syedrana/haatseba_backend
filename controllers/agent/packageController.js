@@ -180,7 +180,7 @@ const deletePackage = async (req, res) => {
 const loadAgentPackages = async (req, res) => {
   try {
     const packages = await Package.find({ status: "active" })
-      .populate("products.productId", "name price image stock")
+      .populate("products.productId", "name price costPrice image stock")
       .sort({ createdAt: -1 });
 
     res.json({
