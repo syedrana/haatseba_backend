@@ -375,6 +375,7 @@ const registerUser = async (req, res) => {
     // ✅ Upload image
     const imageResult = await uploadToCloudinary(req.file.buffer);
     const imageUrl = imageResult.secure_url;
+    const imagePublicId = imageResult.public_id;
 
     // Generate unique referral code for the new user
     const newReferralCode = await generateUniqueReferralCode(firstName, lastName);
@@ -387,6 +388,7 @@ const registerUser = async (req, res) => {
       phone: phone.trim(),
       password: password,
       image: imageUrl,
+      imagePublicId: imagePublicId,
       address: address.trim(),
       referralCode: newReferralCode,
       referredBy: referralCode?.toUpperCase() || null,

@@ -37,7 +37,7 @@ const transactionSchema = new mongoose.Schema({
   // সম্পর্কিত মডেলের নাম (Dynamic reference)
   relatedModel: {
     type: String,
-    enum: ["Withdraw", "Deposit", "Bonus", "Order", "AgentOrder"],
+    enum: ["Withdraw", "TopUp", "Bonus", "Order", "AgentOrder"],
   },
 
   // বর্ণনা (optional but helpful)

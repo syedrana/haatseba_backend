@@ -60,6 +60,8 @@ const {
 const {getmarketplaceProducts} = require("./controllers/user/marketplaceController");
 const getreferralCode = require("./controllers/user/myreferralController");
 
+const {createTopUpRequest, getAdminPendingTopUps, approveTopUp, rejectTopUp} = require("./controllers/user/topupController.js");
+
 // 🟡 Auth Routes Controller----------------------------------------------------------------
 
 const verifyEmail = require("./controllers/auth/verifyEmail");
@@ -246,6 +248,12 @@ app.put("/myclaimscancel/:id", checklogin, cancelMyClaim);
     // Verify Email Controller
 app.get("/verify-email", verifyEmail);
 app.post("/resend-verification", resendVerificationEmail);
+
+
+app.post("/createtopuprequest", checklogin, multerErrorHandler(upload.single("proof")), createTopUpRequest);
+app.get("/getadminpendingtopUps", checkadmin, getAdminPendingTopUps);
+app.patch("/approvetopUp/:id", checkadmin, approveTopUp);
+app.patch("/rejecttopUp/:id", checkadmin, rejectTopUp);
 
 // 🟡 Admin Routes---------------------------------------------------------------------------
 
