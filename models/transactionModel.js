@@ -24,7 +24,7 @@ const transactionSchema = new mongoose.Schema({
   // লেনদেনের ধরণ/ক্যাটাগরি
   category: {
     type: String,
-    enum: ["withdraw", "deposit", "bonus", "transfer", "refund"],
+    enum: ["withdraw", "deposit", "bonus", "transfer", "refund", "deposit_registration", "product_registration"],
     required: true,
   },
 
@@ -37,7 +37,7 @@ const transactionSchema = new mongoose.Schema({
   // সম্পর্কিত মডেলের নাম (Dynamic reference)
   relatedModel: {
     type: String,
-    enum: ["Withdraw", "TopUp", "Bonus", "Order", "AgentOrder"],
+    enum: ["Withdraw", "TopUp", "Bonus", "Order", "AgentOrder", "Product"],
   },
 
   // বর্ণনা (optional but helpful)

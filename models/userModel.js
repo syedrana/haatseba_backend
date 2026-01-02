@@ -129,7 +129,7 @@ const userSchema = new mongoose.Schema(
     },
     referredBy: {
       type: String,
-      required: [true, "Referral code is required"],
+      //required: [true, "Referral code is required"],
       default: null,
       trim: true,
     },
@@ -183,20 +183,11 @@ const userSchema = new mongoose.Schema(
       ref: "Product",
       default: null,
     },
-    isDepositPaid: {
-      type: Boolean,
-      default: false,
-    },
+   
     depositAmount: { 
       type: Number,
       default: 20,
     },
-    depositTransactionId: {
-      type: String,
-      //required: [true, "Transaction Id is required"],
-      trim: true,
-    },
-
     // ✅ Nominee Section
     nominee: {
       firstName: {

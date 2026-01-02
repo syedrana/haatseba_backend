@@ -21,8 +21,23 @@ const changePassword = async (req, res) => {
       return res.status(400).json({ message: "Old password is incorrect!" });
     }
 
-    // Update new password
-    //const hashed = await bcrypt.hash(newPassword, 10);
+    if (newPassword.length < 8 || newPassword.length > 16) {
+      return res.status(400).json({ message: "Password must be 8-16 characters." });
+    }
+
+    // Reject leading/trailing spaces WITHOUT mutating the password
+    if (/^\s|\s$/.test(newPassword)) {
+      return res.status(400).json({ message: "Password cannot start or end with spaces." });
+    }
+
+    // Optional: strength/complexity rule (at least 1 lower, 1 upper, 1 digit, 1 symbol)
+    const strongEnough = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,64}$/.test(newPassword);
+    if (!strongEnough) {
+      return res.status(400).json({
+        message: "Password must include upper, lower, number, and symbol."
+      });
+    }
+
     user.password = newPassword;
     await user.save();
 

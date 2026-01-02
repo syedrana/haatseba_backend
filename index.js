@@ -210,8 +210,8 @@ app.use("/uploads", express.static("uploads"));
 
 // ✅ User Routes------------------------------------------------------------------------------
 
-app.post("/registration", multerErrorHandler(upload.single("image")), securapi, registration);
-app.get("/registerproduct", securapi, registerProduct);
+app.post("/registration", multerErrorHandler(upload.single("image")), checklogin, registration);
+app.get("/registerproduct", checklogin, registerProduct);
 app.get("/verification", securapi, verification);
 app.post("/login", securapi, login);
 app.get("/userdashboard", checklogin, getUserDashboard);
@@ -344,7 +344,7 @@ app.post("/createbrand", checkadmin, createBrand);
    
     //Admin
 app.post("/createpackage", checkadmin, createPackage);
-app.get("/searchproduct", checkadmin, searchProduct);
+app.get("/searchproduct",  searchProduct);
 app.get("/getallpackages", checkadmin, getAllPackages);
 app.get("/getpackagebyid/:id", checkadmin, getPackageById);
 app.put("/updatepackage/:id", checkadmin, updatePackage);

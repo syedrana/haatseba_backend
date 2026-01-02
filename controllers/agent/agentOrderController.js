@@ -136,7 +136,7 @@ const placeAgentOrder = async (req, res) => {
           category: "transfer",
           relatedModel: "AgentOrder",
           relatedId: order._id,
-          description: "Agent package purchase",
+          description: "Joining product package purchase",
           status:"completed",
           runningBalance: wallet.cashBalance,
         },
